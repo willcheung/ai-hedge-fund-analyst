@@ -1,0 +1,45 @@
+{
+  "type": "module",
+  "scripts": {
+    "generate": "python3 scripts/generate_wiki_data.py",
+    "validate:contract": "python3 scripts/validate_section_contract.py",
+    "validate:public": "python3 scripts/validate_public_assets.py public dist",
+    "dev": "npm run demo && vite --host 127.0.0.1",
+    "build": "npm run demo && npm run validate:contract && npm run validate:public && tsc --noEmit && vite build && npm run validate:public && npm run validate:privacy",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "npm run demo && npm run validate:contract && npm run test:unit",
+    "publish:data": "python3 scripts/publish_wiki_data.py publish public/wiki-data.json",
+    "publish:data:shadow": "python3 scripts/publish_wiki_data.py --shadow publish public/wiki-data.json",
+    "test:python": "python3 -m unittest discover -s tests -v",
+    "test:js": "vitest run",
+    "demo": "python3 scripts/stage_demo.py --output-dir public --refresh",
+    "build:bundled": "npm run build",
+    "test:unit": "npm run test:python && npm run test:js",
+    "validate:integration": "python3 scripts/validate_section_contract.py --integration",
+    "validate:privacy": "python3 scripts/validate_demo_privacy.py"
+  },
+  "dependencies": {
+    "@vercel/analytics": "2.0.1",
+    "@vercel/blob": "2.7.0",
+    "@vitejs/plugin-react": "6.0.2",
+    "chart.js": "4.5.1",
+    "datatables.net": "3.0.1",
+    "datatables.net-dt": "3.0.1",
+    "lucide-react": "1.17.0",
+    "react": "19.2.6",
+    "react-chartjs-2": "5.3.1",
+    "react-dom": "19.2.6",
+    "typescript": "6.0.3",
+    "vite": "8.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.15",
+    "@types/react-dom": "19.2.3",
+    "vitest": "4.1.10"
+  },
+  "engines": {
+    "node": "22.x",
+    "npm": "10.x"
+  },
+  "packageManager": "npm@10.9.8"
+}

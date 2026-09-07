@@ -1,0 +1,17 @@
+{
+  "default": "offline-tests",
+  "capabilities": {
+    "offline-tests": {
+      "enabled": true,
+      "scope": "Named synthetic unittest modules only, never job CLI entrypoints",
+      "requirements": "requirements-offline.lock",
+      "packages": ["Pillow", "requests", "certifi", "charset-normalizer", "idna", "urllib3"]
+    },
+    "live-x": {"enabled": false, "reason": "Paid X reads, OAuth refresh and social posting require separately authorized credentials and a reviewed runtime path. Included client source is NOT activation."},
+    "external-wiki": {"enabled": false, "reason": "External wiki tools, schemas, research and state are excluded and were not inspected. Provision separately; do not fall back to production."},
+    "publishing-ops": {"enabled": false, "reason": "Vercel/Blob publishing, deletion, gateway restart and cron mutations are forbidden in offline verification."},
+    "metals-trading": {"enabled": false, "packages": ["numpy", "pandas", "yfinance", "python-dotenv", "google-genai", "requests"], "reason": "Deferred disabled source; broker execution/private state/external option chain dependencies require a separate audit. No metals rewrite or CLI/import execution."},
+    "media-research": {"enabled": false, "packages": ["faster-whisper", "youtube-transcript-api", "feedparser", "yt-dlp", "google-genai", "google-api-python-client", "google-auth", "json-repair", "python-dotenv"], "reason": "Optional transcription/model/Gmail/vendor integrations not installed by offline lock; ffmpeg/yt-dlp/network/model downloads and credentials require separate provisioning."},
+    "market-models": {"enabled": false, "packages": ["yfinance", "openpyxl", "matplotlib"], "reason": "Optional live finance and workbook integrations not installed by offline lock; external datasets/tools and output paths remain unported."}
+  }
+}

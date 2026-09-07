@@ -1,0 +1,23 @@
+.workflow-dependency-card { margin-top: 18px; min-width: 0; background: var(--markets-surface); border-color: var(--markets-border); box-shadow: none; }
+.workflow-dependency-card .ops-workflow-head h3 { color: var(--markets-foreground); }
+.workflow-dependency-card .ops-workflow-head :is(p,.eyebrow) { color: var(--markets-muted); }
+.workflow-dependency-card .ops-summary-strip span { color: var(--markets-foreground); background: var(--markets-hover); border-color: var(--markets-border); }
+.workflow-dependency-explainer { color: var(--markets-muted); font-size: .86rem; line-height: 1.5; }
+.workflow-dependency-scroll { overflow-x: auto; max-width: 100%; min-width: 0; border: 1px solid var(--markets-border); border-radius: 12px; background: radial-gradient(circle at 15% 0%, rgba(14,165,233,.10), transparent 24rem), var(--markets-background); }
+.workflow-dependency-scroll:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 3px; }
+.workflow-dependency-canvas { position: relative; width: 1205px; min-width: 1205px; }
+.workflow-dependency-canvas svg { position: absolute; inset: 0; overflow: visible; color: var(--markets-primary); }
+.workflow-dependency-canvas svg > path { fill: none; stroke: var(--markets-primary); stroke-width: 1.6; }
+.workflow-dependency-canvas svg > .delivery-edge { stroke-dasharray: 5 5; stroke: var(--markets-muted); }
+.workflow-dependency-stage { position: absolute; top: 13px; width: 225px; color: var(--markets-primary); font-size: .65rem; font-weight: 850; letter-spacing: .06em; text-transform: uppercase; }
+.workflow-dependency-node.ops-workflow-node { box-sizing: border-box; position: absolute; width: 225px; height: 70px; min-height: 70px; padding: 8px 10px; display: grid; grid-template-columns: 1fr auto; align-content: center; align-items: center; gap: 3px 5px; border: 1px solid var(--markets-border-strong); border-radius: 9px; background: var(--markets-surface); text-align: left; }
+.workflow-dependency-node strong { font-size: .76rem; line-height: 1.2; color: var(--markets-foreground); }
+.workflow-dependency-node small { grid-column: 1 / -1; font-size: .64rem; line-height: 1.25; color: var(--markets-muted); }
+.workflow-dependency-node .workflow-ops-badge { font-size: .61rem; padding: 2px 5px; }
+.workflow-dependency-node[data-status='pass'] { border-color: var(--markets-positive); }
+.workflow-dependency-node[data-status='degraded'], .workflow-dependency-node[data-status='stale'] { border-color: var(--markets-caution); }
+.workflow-dependency-node[data-status='blocked'], .workflow-dependency-node[data-status='fail'], .workflow-dependency-node[data-status='error'] { border-color: var(--markets-negative); }
+.workflow-dependency-node.synthesis, .workflow-dependency-node.publish, .workflow-dependency-node.transport { border-style: dashed; }
+.workflow-dependency-card .ops-diagnostics ul { display: grid; gap: 4px; font-size: .8rem; }
+@media (max-width: 767px) { .workflow-dependency-card .ops-workflow-head { flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) { .workflow-dependency-card * { transition: none !important; animation: none !important; } }

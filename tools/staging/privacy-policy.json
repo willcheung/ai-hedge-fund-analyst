@@ -1,0 +1,380 @@
+[
+  {
+    "path": "dashboard/scripts/generate_wiki_data.py",
+    "category": "owner_financial_association",
+    "line_sha256": "ea8789d85780b8b4752650868a9711dd03a42aece550692b109665a66940ee09",
+    "reason": "Generic investor/operator social-media accounts, no financial account or holdings fact."
+  },
+  {
+    "path": "dashboard/scripts/public_snapshot.py",
+    "category": "private_absolute_root",
+    "line_sha256": "99c3e60caf834e76a1b5cff1d4df4d278ebf3872182e8438d26326326b00f455",
+    "reason": "Synthetic citation normalization prefix; root-path deny marker remains active."
+  },
+  {
+    "path": "dashboard/scripts/public_snapshot.py",
+    "category": "private_absolute_root",
+    "line_sha256": "2893bdb95cabeadfd4be5e65d862ab91fdc9893edc3132b35fbe3191e31db4ef",
+    "reason": "Synthetic citation normalization prefix; root-path deny marker remains active."
+  },
+  {
+    "path": "dashboard/src/OwnerWorkspace.test.tsx",
+    "category": "private_absolute_root",
+    "line_sha256": "119ed2b1e46fe3e67ed0db6aad43a2bb8cf04e6bfd655cbd2e2b7529bcd60f21",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/src/WorkflowDependencyGraph.test.tsx",
+    "category": "private_absolute_root",
+    "line_sha256": "40e527908b39966ba5dc21e1737b294b867176d5b8e6108cbe1467223b1d1146",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/src/WorkflowDependencyGraph.test.tsx",
+    "category": "private_absolute_root",
+    "line_sha256": "ea29ae6450b46f09f35c812c1a4ebaea49a14370f488e50c0bee8ef964ef1c3c",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/src/WorkflowDependencyGraph.test.tsx",
+    "category": "private_absolute_root",
+    "line_sha256": "38affd29618bdd708895bc316671ca52011c26243180f56d3287b94aee5cce86",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/src/WorkflowOps.test.tsx",
+    "category": "private_absolute_root",
+    "line_sha256": "c96002524f64e87a8a76fdd594ae38a727cd508c83caf534f09d8b20576c30d7",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/src/WorkflowOps.test.tsx",
+    "category": "private_absolute_root",
+    "line_sha256": "437302ae76e3e319231351668d7c777a8fdddad4e73f6e3a08fc50a803d0f314",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/src/marketDataClient.test.ts",
+    "category": "operational_endpoint",
+    "line_sha256": "1534c0956f95e8a9f3da6601386183b065085e5f5ebe885b82d8225c3125234b",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_brief_titles.py",
+    "category": "private_absolute_root",
+    "line_sha256": "681799637902ab9e35d4efe18953b8ef7c6137825925f6e9c11756f8d7c738a7",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_brief_titles.py",
+    "category": "owner_financial_association",
+    "line_sha256": "681799637902ab9e35d4efe18953b8ef7c6137825925f6e9c11756f8d7c738a7",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_generate_wiki_data.py",
+    "category": "private_absolute_root",
+    "line_sha256": "86aaf848afa4d6a8ee73c622f38c0c204b9a855702c999e7b348b5d5adb6291c",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_public_graph_structure.py",
+    "category": "private_absolute_root",
+    "line_sha256": "7ce1462a8cadacc5d85f54fbfd74267936e90b1c06d97d1dcf8cc9a254fd9907",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_public_graph_structure.py",
+    "category": "private_absolute_root",
+    "line_sha256": "6957325328f7ace25b7e056d662893a370feb34b0a5a4580b35a6c0a3520443d",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_public_graph_structure.py",
+    "category": "private_absolute_root",
+    "line_sha256": "4ef6d1508539db6da572e28de0691f4484dc2dbcace936c68329a730b8b654d5",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_public_graph_structure.py",
+    "category": "private_absolute_root",
+    "line_sha256": "f66c08078dc62ad01e8e0cce1c400cd0f2ec7aa1b5618e67d3adbae39ea25982",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_public_snapshot.py",
+    "category": "private_absolute_root",
+    "line_sha256": "6b02613eb0123a7f034a0984f9ba146d4872776d025e5220019016da89e9fd36",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_public_snapshot.py",
+    "category": "private_absolute_root",
+    "line_sha256": "190235b6bc2568e91a0d7f6d8c85b427be19de0a5b80869aa7902f3334bf1d24",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_publications.py",
+    "category": "private_absolute_root",
+    "line_sha256": "72b65e21517a72166c4ed06b55f7e9391ce57b07d536d32ecd897d5dce1f038e",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_publications.py",
+    "category": "private_absolute_root",
+    "line_sha256": "7679851560f29285bbc5c3951ce45a088cb52dc109c662d2549f26a804f185ee",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_publications.py",
+    "category": "private_absolute_root",
+    "line_sha256": "a1b56287a13b5293e3e98fd8eb57ef3cd8e76ac700524a437091d5b4f471ab20",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_publications.py",
+    "category": "owner_financial_association",
+    "line_sha256": "1d4301280b1f544bd596d6d6d759e2d56a01eab2d9b000a2b8eb5907da86f464",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_publications.py",
+    "category": "owner_financial_association",
+    "line_sha256": "72f8f83b1611f6430a80008f577f88b2f89c6c5908e3673eae7dffed63a388ac",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_publications.py",
+    "category": "owner_financial_association",
+    "line_sha256": "0a5bd9596af496581036972a07e669e4e3d1fed58ffb5159b0ba79bce6713bfa",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_publications.py",
+    "category": "owner_financial_association",
+    "line_sha256": "7caadc601ac3c559d5723b53ed709e6edc4fb6fc956e4b9a6410609e5322e83b",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_publications.py",
+    "category": "owner_financial_association",
+    "line_sha256": "b5e686bf42b7e29ed8bafad1ae11408cf5a843ce9cf7c41112cada8c58e07f7d",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_publish_wiki_data.py",
+    "category": "private_absolute_root",
+    "line_sha256": "8b945f660d23459866ee2ff4ff1df1b942ccd0f6355bdedad884257dcbbd08a4",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_publish_wiki_data.py",
+    "category": "operational_endpoint",
+    "line_sha256": "570ccd14aebf90e5eecb8c98a75cecc7baea3f493cb46cb2eb060cb22b095fa8",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_retained_weekly_history.py",
+    "category": "private_absolute_root",
+    "line_sha256": "d7c87a1cb422e4e1e1ded33d0d66ffb6b1ab27d5ce54dbae5c4f36462eece266",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_shortlist_membership_public.py",
+    "category": "owner_financial_association",
+    "line_sha256": "840195b73f61221d9d2d3f814306e3cecd1d3617223e0ab29eab5d3b67cd6b2b",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_workflow_operational_status.py",
+    "category": "private_absolute_root",
+    "line_sha256": "726359e8e0e252f358d10a4cb9c7c2b8a3d771279971c65584ec0062827e0d82",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_workflow_operational_status.py",
+    "category": "private_absolute_root",
+    "line_sha256": "0f59dd34c33d3ccef53d3149f99a53e14772bbdaad9ad96036e387b5f1a57782",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "dashboard/tests/test_workflow_operational_status.py",
+    "category": "private_absolute_root",
+    "line_sha256": "534f13369c0934f203b982c83e6b1377c52221d16d549e3a3049344b83c899e9",
+    "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
+  },
+  {
+    "path": "deploy/jobs/test_job_definitions.py",
+    "category": "private_absolute_root",
+    "line_sha256": "567b6343e8cd62a6a22683924a8e0e0bcea368b4a4cca5539de3d4c177582c20",
+    "reason": "Invented relocated home used by declarative export regression."
+  },
+  {
+    "path": "deploy/jobs/test_job_definitions.py",
+    "category": "private_absolute_root",
+    "line_sha256": "25b7c24ae192c5ef2aeb9d1b8687102663c42f2555d7d0bb9e070974566b2c47",
+    "reason": "Invented relocated home used by declarative export regression."
+  },
+  {
+    "path": "deploy/jobs/test_job_definitions.py",
+    "category": "private_absolute_root",
+    "line_sha256": "07d1f68d08c96de73f187d0ee926474d8d237c27e1172ad4fc117dda3ff25c22",
+    "reason": "Invented relocated home used by declarative export regression."
+  },
+  {
+    "path": "deploy/jobs/test_job_definitions.py",
+    "category": "private_absolute_root",
+    "line_sha256": "dfb4be543916d32c3f206ee8e61e1f85d97fee106463b6572b6cc3d9a47d1977",
+    "reason": "Invented relocated home used by declarative export regression."
+  },
+  {
+    "path": "automation/gold_trader.py",
+    "category": "deployment_identifier",
+    "line_sha256": "0888b83ae325ad5fdb4f0b1fecc1278ed7d12c9cc679edec372e54c953cea306",
+    "reason": "Public BLS economic series identifier."
+  },
+  {
+    "path": "automation/gold_trader.py",
+    "category": "deployment_identifier",
+    "line_sha256": "b7ded790d39588e503c12217c3dca628b1b5e1c03830802a189f16cc33d65865",
+    "reason": "Public BLS economic series identifier."
+  },
+  {
+    "path": "automation/path_watch_monitor.py",
+    "category": "deployment_identifier",
+    "line_sha256": "3366b9603ef5d8302f92b608aaee881b415e08be475eb55f7781c05dc633a4d2",
+    "reason": "Public SEC issuer CIK identifier."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "private_absolute_root",
+    "line_sha256": "4ae3069c6e5962a531fc3bc31bb1764a49204adead2d2121223554b874e4be1b",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "private_absolute_root",
+    "line_sha256": "3794976af73a567a254a8aad6eb57da9b893a67b14a6be54b449f85230f9f2ad",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "private_absolute_root",
+    "line_sha256": "98f31763a805de5626c01c355ecc61c01dcc4705c9e5c3e0cd224fe0cc571dbc",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "deployment_identifier",
+    "line_sha256": "afa7e753afa09edb86d9bf428099da5a3a070d5874d8666b306b54145e96579e",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "deployment_identifier",
+    "line_sha256": "2e03fd34e2635a628190535b9bab7c476c5b063d1140c8c69a7fdd47f0d400e2",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "deployment_identifier",
+    "line_sha256": "bd90a6117469acd66f163af79b348f6290339acbc024bb376a16433f9459d33a",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "deployment_identifier",
+    "line_sha256": "7c93f83911736e1049593216e96170fb1979659e9669bf82b20243404ae3b3f9",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "deployment_identifier",
+    "line_sha256": "57cfdfda9784cec6c3ca7dd00a9553977bfb9ebe30c1cf73b343db2d2b26db80",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "operational_endpoint",
+    "line_sha256": "800d511ccffd6017087f4d6107e24f32febb999e1db28f52ffd03f6ac46cc44b",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "operational_endpoint",
+    "line_sha256": "71a15d8f69e610523269b83ff9f4713918aa33f8eb55d7274d35ade554ff7edd",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "owner_financial_association",
+    "line_sha256": "ba56ba1aa831ac2fc06cb6694ffafc37bbb61eb41ec818e39da75720eaa4cbde",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "owner_financial_association",
+    "line_sha256": "80f56147439de0cd874d553abb47ff2d7789a385a55d0b9d00692e08b9ba7fd2",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "owner_financial_association",
+    "line_sha256": "e771958d8832cce29bfb1d51ac4368e1295ece20d56638ac5a3747086faf5744",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "private_account_identifier",
+    "line_sha256": "3aaf5de33ae12dcc98ecfc4a71d2c457b091031234af411062c6842e8b483b1e",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "private_account_identifier",
+    "line_sha256": "7c93f83911736e1049593216e96170fb1979659e9669bf82b20243404ae3b3f9",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "private_financial_setting",
+    "line_sha256": "0f28bf62084a257e529f1d36bd5b5d28ee8f60a072766e5426070dd624c6b944",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "private_financial_setting",
+    "line_sha256": "30ee33daf8a4b2a1b2cc34b7eab73227933029405e8024540cb836ba8c28c399",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "private_financial_setting",
+    "line_sha256": "77373d54a530581087271cc844b4af0c73c1dda9556012f1ec90055cfacd49af",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "personal_email",
+    "line_sha256": "c604b881b42350cc94aa920ac815198e26e40a2115370bbb18706e3e650f14f1",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "personal_email",
+    "line_sha256": "8e032d91d4961a354f1103e0ba98630d8641354ea314277303f1cb7f79382d8b",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "personal_email",
+    "line_sha256": "9f03a92553cdedac9d5dea496653cfbb48e73fc98a2715bd6f37c11e9c48f3db",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  },
+  {
+    "path": "tools/staging/test_privacy.py",
+    "category": "personal_email",
+    "line_sha256": "3afcdd47ce78a21ad0cd6d2fdaab231fe1d43907dc652002bf88e54f1b5af9f5",
+    "reason": "Invented scanner negative; literal is deliberately detectable outside this exact source line."
+  }
+]

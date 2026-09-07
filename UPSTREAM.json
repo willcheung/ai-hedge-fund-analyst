@@ -1,0 +1,10 @@
+{
+  "hermes": {
+    "repo": "https://github.com/NousResearch/hermes-agent.git",
+    "commit": "9dd6634c5635321cf38840cc30e9b51226689128",
+    "version": "0.21.0",
+    "policy": "external upstream dependency; no copied source or venv"
+  },
+  "wiki": "external dependency; provision privately",
+  "runtime_state": "provision outside checkout; not included"
+}

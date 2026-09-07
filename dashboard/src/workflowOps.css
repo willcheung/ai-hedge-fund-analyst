@@ -1,0 +1,27 @@
+.workflow-ops { color: var(--markets-foreground); }
+.workflow-ops header > p, .workflow-ops .markets-metadata { color: var(--markets-muted); }
+.workflow-ops-runtime { border: 1px solid var(--markets-border); border-radius: 10px; padding: 1.1rem; background: var(--markets-surface); }
+.workflow-ops-runtime > div:first-child { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; }
+.workflow-ops-runtime h2 { margin: 0; font-size: 1.1rem; }
+.workflow-ops-dates { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 0; }
+.workflow-ops-dates dt { color: var(--markets-muted); font-size: .8rem; }
+.workflow-ops-dates dd { margin: .3rem 0 0; font-size: .85rem; font-variant-numeric: tabular-nums; }
+.workflow-ops-badge { display: inline-block; border: 1px solid currentColor; border-radius: 5px; padding: .12rem .4rem; font-size: .75rem; font-weight: 650; color: var(--markets-muted); white-space: nowrap; }
+.workflow-ops-badge[data-status=pass] { color: var(--markets-positive, #207747); }
+.workflow-ops-badge[data-status=fail], .workflow-ops-badge[data-status=blocked] { color: var(--markets-negative, #bc4141); }
+.workflow-ops-badge[data-status=degraded], .workflow-ops-badge[data-status=stale], .workflow-ops-badge[data-status=missing], .workflow-ops-badge[data-status=paused] { color: var(--markets-caution, #9b6917); }
+.workflow-ops-table { border-collapse: collapse; width: 100%; text-align: left; font-size: .85rem; }
+.workflow-ops-table caption { text-align: left; color: var(--markets-muted); font-size: .8rem; padding-bottom: .6rem; }
+.workflow-ops-table th, .workflow-ops-table td { padding: .8rem .6rem; vertical-align: top; border-bottom: 1px solid var(--markets-border); min-width: 110px; }
+.workflow-ops-table th:first-child { min-width: 180px; }
+.workflow-ops-table small { display: block; margin-top: .35rem; color: var(--markets-muted); font-size: .76rem; font-weight: 400; }
+.workflow-ops-table th[scope=col] { white-space: nowrap; overflow-wrap: normal; }
+.workflow-ops-table summary { cursor: pointer; min-height: 44px; }
+.workflow-ops-checks { padding-left: 1rem; min-width: 210px; }
+.workflow-ops-checks li { margin-bottom: .8rem; }
+.workflow-ops-flow { padding-left: 1.3rem; }
+.workflow-ops-flow li { padding-left: .4rem; margin-block: 1rem; }
+.workflow-ops-flow p { margin: .35rem 0; color: var(--markets-muted); max-width: 85ch; }
+.workflow-ops-scroll-hint { display: none; }
+@media (max-width: 767px) { .workflow-ops-scroll-hint { display: block; font-size: .75rem; color: var(--markets-muted); } }
+@media (max-width: 600px) { .workflow-ops-runtime { padding: .85rem; } .workflow-ops-dates { grid-template-columns: 1fr; gap: .6rem; } }

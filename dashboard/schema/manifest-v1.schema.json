@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marketwiki.local/schema/manifest-v1.json",
+  "title": "MarketWiki Distribution Manifest v1",
+  "$defs": {
+    "snapshotId": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "snapshotPath": { "type": "string", "pattern": "^marketwiki(?:/shadow)?/snapshots/[a-f0-9]{64}\\.json$" },
+    "snapshotUrl": { "type": "string", "format": "uri", "pattern": "^https://[^/]+\\.blob\\.vercel-storage\\.com/marketwiki(?:/shadow)?/snapshots/[a-f0-9]{64}\\.json$" },
+    "sourceHealth": {
+      "type": "object",
+      "required": ["status"],
+      "properties": { "status": { "enum": ["pass", "degraded", "fail"] } }
+    },
+    "projectionStatus": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["status"],
+      "properties": { "status": { "enum": ["pass", "degraded", "fail"] } }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "snapshotId", "snapshotPath", "snapshotUrl", "objectSha256", "byteLength",
+        "builtAt", "publishedAt", "sourceMaxAsOf", "sourceHealth", "projectionStatus"
+      ],
+      "properties": {
+        "snapshotId": { "$ref": "#/$defs/snapshotId" },
+        "snapshotPath": { "$ref": "#/$defs/snapshotPath" },
+        "snapshotUrl": { "$ref": "#/$defs/snapshotUrl" },
+        "objectSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "byteLength": { "type": "integer", "minimum": 1, "maximum": 6000000 },
+        "builtAt": { "type": "string", "format": "date-time" },
+        "publishedAt": { "type": "string", "format": "date-time" },
+        "sourceMaxAsOf": { "type": "string", "format": "date-time" },
+        "sourceHealth": { "$ref": "#/$defs/sourceHealth" },
+        "projectionStatus": { "$ref": "#/$defs/projectionStatus" }
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "snapshotId", "snapshotPath", "snapshotUrl", "objectSha256",
+    "byteLength", "builtAt", "publishedAt", "sourceMaxAsOf", "sourceHealth",
+    "projectionStatus", "currentSnapshotId", "currentSnapshotUrl",
+    "previousSnapshotId", "previousSnapshotUrl", "history"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "snapshotId": { "$ref": "#/$defs/snapshotId" },
+    "snapshotPath": { "$ref": "#/$defs/snapshotPath" },
+    "snapshotUrl": { "$ref": "#/$defs/snapshotUrl" },
+    "objectSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "byteLength": { "type": "integer", "minimum": 1, "maximum": 6000000 },
+    "builtAt": { "type": "string", "format": "date-time" },
+    "publishedAt": { "type": "string", "format": "date-time" },
+    "sourceMaxAsOf": { "type": "string", "format": "date-time" },
+    "sourceHealth": { "$ref": "#/$defs/sourceHealth" },
+    "projectionStatus": { "$ref": "#/$defs/projectionStatus" },
+    "currentSnapshotId": { "$ref": "#/$defs/snapshotId" },
+    "currentSnapshotUrl": { "$ref": "#/$defs/snapshotUrl" },
+    "previousSnapshotId": { "anyOf": [{ "$ref": "#/$defs/snapshotId" }, { "type": "null" }] },
+    "previousSnapshotUrl": { "anyOf": [{ "$ref": "#/$defs/snapshotUrl" }, { "type": "null" }] },
+    "history": { "type": "array", "maxItems": 99, "items": { "$ref": "#/$defs/entry" } }
+  }
+}

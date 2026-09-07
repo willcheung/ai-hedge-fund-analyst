@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "unavailable": "Assessment unavailable",
+  "labels": {
+    "Watch": {
+      "label": "Watch",
+      "meaning": "Monitoring only; no present purchase recommendation.",
+      "verification": "Public vocabulary contract; producers must supply supporting evidence. No investment inference is made from an unknown code."
+    },
+    "Wait for more evidence": {
+      "label": "Wait for more evidence",
+      "meaning": "The current conclusion awaits stated evidence.",
+      "verification": "Public vocabulary contract; producers must supply supporting evidence. No investment inference is made from an unknown code."
+    },
+    "Research incomplete": {
+      "label": "Research incomplete",
+      "meaning": "Research lacks information needed for an assessment.",
+      "verification": "Public vocabulary contract; producers must supply supporting evidence. No investment inference is made from an unknown code."
+    },
+    "Avoid new purchases": {
+      "label": "Avoid new purchases",
+      "meaning": "The source advises against new purchases; says nothing about anyone's actual holdings.",
+      "verification": "Public vocabulary contract; producers must supply supporting evidence. No investment inference is made from an unknown code."
+    },
+    "Assessment unavailable": {
+      "label": "Assessment unavailable",
+      "meaning": "No verified public assessment is available.",
+      "verification": "Public vocabulary contract; producers must supply supporting evidence. No investment inference is made from an unknown code."
+    },
+    "OWNABLE": {
+      "label": "Differentiated business thesis supported",
+      "meaning": "Durable differentiated reason established by current evidence; not a buy recommendation.",
+      "verification": "Public vocabulary contract; producers must supply supporting evidence. No investment inference is made from an unknown code."
+    },
+    "EMERGING": {
+      "label": "Promising thesis; evidence incomplete",
+      "meaning": "Credible causal thesis with important proof incomplete.",
+      "verification": "Public vocabulary contract; producers must supply supporting evidence. No investment inference is made from an unknown code."
+    },
+    "NARRATIVE_ONLY": {
+      "label": "Theme exposure; economic evidence limited",
+      "meaning": "Theme adjacency without sufficient economic proof.",
+      "verification": "Public vocabulary contract; producers must supply supporting evidence. No investment inference is made from an unknown code."
+    },
+    "NO_EDGE": {
+      "label": "No differentiated thesis established",
+      "meaning": "No differentiated ownership edge established; not a sell verdict.",
+      "verification": "Public vocabulary contract; producers must supply supporting evidence. No investment inference is made from an unknown code."
+    },
+    "BROKEN": {
+      "label": "Thesis invalidated",
+      "meaning": "Documented thesis invalidation; not an execution instruction.",
+      "verification": "Public vocabulary contract; producers must supply supporting evidence. No investment inference is made from an unknown code."
+    },
+    "core-long": {
+      "label": "Established business thesis",
+      "meaning": "Scaled engine with durable demand and financial durability, or diversified unlevered exposure. No low-risk promise.",
+      "verification": "Public vocabulary contract; producers must supply supporting evidence. No investment inference is made from an unknown code."
+    },
+    "speculative": {
+      "label": "Business thesis with material gaps",
+      "meaning": "Material business-model, financing, concentration or execution gap, or narrow thematic exposure.",
+      "verification": "Public vocabulary contract; producers must supply supporting evidence. No investment inference is made from an unknown code."
+    },
+    "highly-speculative": {
+      "label": "Highly uncertain business thesis",
+      "meaning": "Binary/pre-proof, dilution-dependent, distressed, leveraged or narrative-heavy setup.",
+      "verification": "Public vocabulary contract; producers must supply supporting evidence. No investment inference is made from an unknown code."
+    }
+  }
+}

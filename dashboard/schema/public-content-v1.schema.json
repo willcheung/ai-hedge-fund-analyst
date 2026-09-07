@@ -1,0 +1,295 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://markets.example/schema/public-content-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]{0,159}$"
+    },
+    "jobId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]{0,159}$"
+    },
+    "type": {
+      "enum": [
+        "brief",
+        "company",
+        "theme"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50000
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50000
+    },
+    "publishedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "informationAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "tickers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^(?:[A-Z][A-Z0-9_-]{0,14}:)?(?:[A-Z][A-Z0-9.-]{0,19}|[0-9]{1,6}\\.[A-Z]{1,6}|[0-9]{1,6}(?:TW|T))$"
+      }
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "heading": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50000
+          },
+          "markdown": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50000
+          },
+          "sourceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]{0,159}$",
+              "maxLength": 160
+            },
+            "maxItems": 1000
+          },
+          "emoji": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50000
+          }
+        },
+        "required": [
+          "heading",
+          "markdown"
+        ]
+      },
+      "maxItems": 1000
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]{0,159}$",
+            "maxLength": 160
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50000
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "url"
+        ]
+      },
+      "maxItems": 1000
+    },
+    "assessment": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50000
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "currentView": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50000
+        },
+        "why": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50000
+        },
+        "horizon": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50000
+        },
+        "context": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50000
+        },
+        "mainRisk": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50000
+        },
+        "prerequisites": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50000
+          },
+          "maxItems": 1000
+        },
+        "sourceIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]{0,159}$",
+            "maxLength": 160
+          },
+          "maxItems": 1000
+        }
+      },
+      "required": [
+        "currentView",
+        "why",
+        "prerequisites",
+        "sourceIds"
+      ]
+    },
+    "quote": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50000
+        },
+        "price": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "asOf": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "change": {
+          "type": "number"
+        },
+        "changePct": {
+          "type": "number"
+        },
+        "period": {
+          "const": "day"
+        },
+        "previousAsOf": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "symbol",
+        "price",
+        "currency",
+        "asOf"
+      ]
+    },
+    "thesisHistory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "previousView": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50000
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50000
+          },
+          "currentView": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50000
+          },
+          "informationAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sourceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]{0,159}$",
+              "maxLength": 160
+            },
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "previousView",
+          "evidence",
+          "currentView",
+          "informationAt",
+          "sourceIds"
+        ]
+      },
+      "maxItems": 1000
+    },
+    "publishedDate": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "informationDate": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "jobId",
+    "type",
+    "title",
+    "summary",
+    "publishedAt",
+    "informationAt",
+    "tickers",
+    "sections",
+    "sources"
+  ]
+}

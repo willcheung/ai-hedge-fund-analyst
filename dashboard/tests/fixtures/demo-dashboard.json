@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 1,
+  "dataAsOf": "2000-01-20T00:00:00Z",
+  "refreshMode": "runtime-manifest",
+  "counts": {
+    "tickers": 2,
+    "researched": 0,
+    "stubs": 2,
+    "reports": 0,
+    "convictionItems": 0,
+    "journalDays": 1
+  },
+  "actionBuckets": {
+    "buy_add": 0,
+    "hold": 0,
+    "wait_watch": 0,
+    "avoid_trim": 0,
+    "unclassified": 2
+  },
+  "topTags": [
+    [
+      "synthetic-demo",
+      2
+    ]
+  ],
+  "categoryCounts": {
+    "Synthetic hardware": 1,
+    "AI power / energy": 1
+  },
+  "tickers": [
+    {
+      "symbol": "SYNTHA",
+      "title": "Synthetic Alpha",
+      "updated": "2000-01-01T00:00:00Z",
+      "sourcePath": "synthetic-demo",
+      "tags": [
+        "synthetic-demo"
+      ],
+      "summary": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+      "status": "Research incomplete",
+      "actionBucket": "unclassified",
+      "isStub": true,
+      "category": "Synthetic hardware",
+      "fullSummary": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+      "detailSections": [
+        {
+          "title": "Synthetic example",
+          "summary": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+          "bullets": [
+            "No market evidence supplied."
+          ]
+        }
+      ]
+    },
+    {
+      "symbol": "SYNTHP",
+      "title": "Synthetic Power",
+      "updated": "2000-01-01T00:00:00Z",
+      "sourcePath": "synthetic-demo",
+      "tags": [
+        "synthetic-demo"
+      ],
+      "summary": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+      "status": "Research incomplete",
+      "actionBucket": "unclassified",
+      "isStub": true,
+      "category": "AI power / energy",
+      "fullSummary": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+      "detailSections": [
+        {
+          "title": "Synthetic example",
+          "summary": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+          "bullets": [
+            "No market evidence supplied."
+          ]
+        }
+      ]
+    }
+  ],
+  "focusTickers": [],
+  "publications": [
+    {
+      "schemaVersion": 1,
+      "id": "synthetic-brief",
+      "jobId": "synthetic-publisher",
+      "type": "brief",
+      "title": "Synthetic demonstration edition",
+      "summary": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+      "publishedAt": "2000-01-01T00:00:00Z",
+      "informationAt": "2000-01-01T00:00:00Z",
+      "tickers": [],
+      "sections": [
+        {
+          "heading": "Synthetic demonstration",
+          "markdown": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+          "sourceIds": []
+        }
+      ],
+      "sources": []
+    },
+    {
+      "schemaVersion": 1,
+      "id": "synthetic-theme",
+      "jobId": "synthetic-publisher",
+      "type": "theme",
+      "title": "Synthetic demonstration theme",
+      "summary": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+      "publishedAt": "2000-01-01T00:00:00Z",
+      "informationAt": "2000-01-01T00:00:00Z",
+      "tickers": [],
+      "sections": [
+        {
+          "heading": "Synthetic demonstration",
+          "markdown": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+          "sourceIds": []
+        }
+      ],
+      "sources": []
+    },
+    {
+      "schemaVersion": 1,
+      "id": "synthetic-company",
+      "jobId": "synthetic-publisher",
+      "type": "company",
+      "title": "Synthetic Alpha demonstration",
+      "summary": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+      "publishedAt": "2000-01-01T00:00:00Z",
+      "informationAt": "2000-01-01T00:00:00Z",
+      "tickers": [
+        "SYNTHA"
+      ],
+      "sections": [
+        {
+          "heading": "Synthetic demonstration",
+          "markdown": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+          "sourceIds": []
+        }
+      ],
+      "sources": []
+    }
+  ],
+  "marketPosture": [
+    {
+      "name": "Synthetic demonstration",
+      "sourcePath": "synthetic-demo",
+      "score": null,
+      "zone": "Unknown",
+      "delta": null,
+      "artifactDate": "2000-01-01T00:00:00Z",
+      "freshnessStatus": "stale",
+      "plainTitle": "Synthetic demonstration",
+      "plainEnglish": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+      "watch": [
+        "No evidence supplied."
+      ],
+      "history": []
+    }
+  ],
+  "dailyJournal": [
+    {
+      "date": "2000-01-01",
+      "headline": "Synthetic demonstration",
+      "summary": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+      "keyTakeaways": [],
+      "portfolioActions": [],
+      "interestingTickers": [],
+      "items": [],
+      "sourceTypes": [
+        "synthetic-demo"
+      ]
+    }
+  ],
+  "cronTimeline": [
+    {
+      "id": "synthetic-edition",
+      "jobId": "synthetic-publisher",
+      "jobName": "Synthetic demonstration edition",
+      "runTime": "2000-01-01T00:00:00Z",
+      "schedule": "disabled",
+      "deliver": "none",
+      "category": "Market brief / deep dive",
+      "sourcePath": "synthetic-demo",
+      "summary": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+      "highlights": [
+        "All events are fictional."
+      ],
+      "articleBody": "# Synthetic demonstration\n\nSYNTHETIC DEMO — TEST ONLY. All companies and events are fictional."
+    }
+  ],
+  "intradayEquityWatchdog": null,
+  "currentAsymmetricShortlist": {
+    "generatedAt": "2000-01-01T00:00:00Z",
+    "policy": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+    "summary": {},
+    "rows": [
+      {
+        "symbol": "SYNTHA",
+        "bucket": "Research Memory / Not Live Action",
+        "bucketReason": "Synthetic example without research evidence.",
+        "entryEligible": false,
+        "entryStatus": "quote_missing"
+      }
+    ],
+    "membershipPolicy": {
+      "bucketMode": "mutually_exclusive",
+      "description": "SYNTHETIC DEMO — TEST ONLY. Each fictional company has one membership bucket; no live action is authorized.",
+      "bucketOrder": [
+        "Buy / Scout Now",
+        "Wait for Trigger",
+        "Add After Proof",
+        "Research Memory / Not Live Action",
+        "Kill / Do Not Average"
+      ]
+    },
+    "actionChanges": [],
+    "automation": {
+      "jobName": "Synthetic demonstration",
+      "schedule": "disabled",
+      "enabled": false,
+      "lastStatus": "not_run",
+      "health": "missing",
+      "lastRunAt": "",
+      "nextRunAt": ""
+    }
+  },
+  "aiProjectionExhibits": {
+    "generatedAt": "2000-01-01T00:00:00Z",
+    "policy": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+    "privacyClass": "public",
+    "rowCount": 1,
+    "sourcePaths": [],
+    "summary": {
+      "dataQuality": {
+        "missing": 1
+      },
+      "valuationSignals": {},
+      "capitalEligibleCount": 0,
+      "degradedOrMissingCount": 1
+    },
+    "rows": [
+      {
+        "symbol": "SYNTHA",
+        "companyName": "Synthetic Alpha",
+        "archetype": "synthetic-demo",
+        "price": null,
+        "dataQualityLabel": "missing",
+        "missingCriticalFields": [
+          "price",
+          "fundamentals"
+        ],
+        "warRoomAction": "Assessment unavailable",
+        "capitalEligibleFromProjection": false
+      }
+    ],
+    "chartData": {}
+  },
+  "aiWarRoomCompleteData": {
+    "generatedAt": "2000-01-01T00:00:00Z",
+    "rows": [
+      {
+        "symbol": "SYNTHA",
+        "companyName": "Synthetic Alpha",
+        "price": null,
+        "dataQualityLabel": "missing"
+      }
+    ]
+  },
+  "marketGraphs": [
+    {
+      "privacy_class": "public",
+      "workflowId": "synthetic-demo",
+      "runId": "synthetic-not-a-run",
+      "label": "Synthetic demonstration",
+      "generatedAt": "2000-01-01T00:00:00Z",
+      "finalGate": "degraded",
+      "recommendation": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+      "allowedNodes": [],
+      "blockedNodes": [
+        "news-calendar"
+      ],
+      "selfHealSummary": [],
+      "brokerSafetyFindings": [],
+      "contradictions": [],
+      "tickers": [],
+      "themes": [
+        "synthetic-demo"
+      ],
+      "nodeCount": 1,
+      "passCount": 0,
+      "degradedCount": 0,
+      "failCount": 1,
+      "decisionEventCount": 0,
+      "slackWorthyEventCount": 0,
+      "graphNodes": [
+        {
+          "privacy_class": "public",
+          "id": "news-calendar",
+          "label": "Synthetic unavailable source",
+          "kind": "source",
+          "status": "missing",
+          "allowedIntoSynthesis": false,
+          "reason": "No evidence supplied.",
+          "sourceCount": 0,
+          "healActions": []
+        }
+      ],
+      "graphEdges": [],
+      "decisionEvents": []
+    }
+  ],
+  "sources": [
+    {
+      "name": "Synthetic example",
+      "role": "Demonstration",
+      "summary": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional.",
+      "examples": [
+        "Hand-authored fictional constants"
+      ],
+      "howUsed": "Demonstration only."
+    }
+  ],
+  "privacy": {
+    "classification": "public",
+    "projection": "structural-allowlist-v1",
+    "excluded": [],
+    "note": "SYNTHETIC DEMO — TEST ONLY. All companies and events are fictional."
+  },
+  "sourceHealth": {
+    "status": "degraded",
+    "sections": {}
+  }
+}

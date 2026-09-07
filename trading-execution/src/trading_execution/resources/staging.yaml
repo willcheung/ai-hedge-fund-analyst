@@ -1,0 +1,23 @@
+# SYNTHETIC TEST/STAGING ONLY. Not a broker/account configuration.
+mode: paper
+kill_switch: true
+auto_order_routing_enabled: false
+live_money_risk_acknowledged: false
+allow_live_orders: false
+allow_paper_orders: false
+allow_market_orders: false
+require_stop: true
+require_human_approval: true
+synthetic_brackets_required: true
+ibkr:
+  trading_enabled: false
+  readonly: true
+  live_risk_acknowledged: false
+allowed_symbols:
+  MES: {dollars_per_point: 5, max_contracts: 1}
+  ES: {dollars_per_point: 50, max_contracts: 0}
+  MGC: {dollars_per_point: 10, max_contracts: 0}
+risk_limits:
+  max_contracts_total: 1
+  max_trade_loss_usd: 100
+paths: {}

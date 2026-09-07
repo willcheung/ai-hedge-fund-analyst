@@ -1,0 +1,18 @@
+node_modules
+dist
+.vercel
+.DS_Store
+.cache/
+__pycache__/
+.venv/
+public/wiki-data.json
+public/market-data/
+# Explicit synthetic interface fixture, never a live wiki copy.
+!tests/fixtures/wiki/
+!tests/fixtures/wiki/**
+# Raw command logs remain local audit evidence, not source-controlled data.
+
+.install-home/
+.wheelhouse/
+.local-state/
+.disabled/
