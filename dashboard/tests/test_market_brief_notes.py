@@ -76,7 +76,7 @@ $SYNTHB demand supports AI spending, subject to evidence.
         self.note()
         for job in LANE_JOBS.values():
             self.cron_output(job, name='Macro research', day='2026-09-07')
-        self.cron_output('old-x', name='CalConviction earnings publisher')
+        self.cron_output('old-publisher', name='Public publishing workflow')
         old = self.cron_output('ordinary', suffix='old')
         new = self.cron_output('ordinary', suffix='new')
         os.utime(old, (1, 1))
@@ -141,7 +141,7 @@ $SYNTHB demand supports AI spending, subject to evidence.
     def test_opt_in_only_and_canonical_brief_untouched(self):
         canonical = self.briefs / '2026-09-06.md'
         canonical.write_text('# Canonical daily brief\nUnchanged sections.')
-        (self.briefs / 'calconviction_history.md').write_text('Published to X!')
+        (self.briefs / 'publishing_history.md').write_text('Published publicly!')
         self.note()
         self.assertEqual(len(gen.parse_cron_timeline()), 1)
         self.assertEqual(canonical.read_text(), '# Canonical daily brief\nUnchanged sections.')

@@ -35,9 +35,6 @@ jobs:
           sudo env -i PATH=/usr/bin:/bin python3 -m unittest discover -s tools/preflight -p 'test_*.py' -v
           sudo env -i PATH=/usr/bin:/bin python3 -m unittest discover -s tools/staging -p 'test_*.py' -v
           sudo env -i PATH=/usr/bin:/bin python3 tools/staging/check_source.py
-      - name: Offline synthetic job definitions and scratch round-trip
-        run: |
-          sudo env -i PATH=/usr/bin:/bin STAGING_ROOT=/tmp/analyst-ci bash tools/staging/offline.sh bash -c 'python3 -m unittest discover -s deploy/jobs -p "test_*.py" -v && python3 deploy/jobs/manage.py validate deploy/jobs/definitions.json && python3 deploy/jobs/manage.py scratch-import deploy/jobs/definitions.json --destination /tmp/analyst-job-scratch-ci-check'
   dashboard-python:
     runs-on: ubuntu-24.04
     steps:
@@ -98,51 +95,3 @@ jobs:
           path: /tmp/analyst-ci/dashboard/dist/
           if-no-files-found: error
           retention-days: 14
-  automation:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-      - name: Prepare disposable root-owned source copy
-        working-directory: ${{ github.workspace }}
-        run: |
-          sudo mkdir /tmp/analyst-ci
-          sudo cp -a . /tmp/analyst-ci/
-          sudo chown -R root:root /tmp/analyst-ci
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: '3.12'
-      - name: Acquire wheels, then install offline
-        run: |
-          sudo apt-get update && sudo apt-get install -y --no-install-recommends bubblewrap fonts-dejavu-core
-          sudo env -i PATH="$PATH" HOME=/tmp/analyst-ci/install-home python -m venv .venv
-          sudo env -i PATH="$PATH" HOME=/tmp/analyst-ci/install-home python -m pip download --index-url https://pypi.org/simple --only-binary=:all: --require-hashes -r automation/requirements-test.txt -d .wheelhouse
-          sudo env -i PATH="/tmp/analyst-ci/.venv/bin:$PATH" STAGING_ROOT=/tmp/analyst-ci bash tools/staging/offline.sh python -m pip install --no-index --find-links .wheelhouse --require-hashes -r automation/requirements-test.txt
-      - name: Offline automation tests
-        working-directory: /tmp/analyst-ci/automation
-        run: sudo env -i PATH="/tmp/analyst-ci/.venv/bin:$PATH" STAGING_ROOT=/tmp/analyst-ci bash ../tools/staging/offline.sh python -m unittest discover -p 'test_*.py' -v
-  disabled-execution:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-      - name: Prepare disposable root-owned source copy
-        working-directory: ${{ github.workspace }}
-        run: |
-          sudo mkdir /tmp/analyst-ci
-          sudo cp -a . /tmp/analyst-ci/
-          sudo chown -R root:root /tmp/analyst-ci
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: '3.12'
-      - name: Acquire wheels, then install offline
-        run: |
-          sudo apt-get update && sudo apt-get install -y --no-install-recommends bubblewrap
-          sudo env -i PATH="$PATH" HOME=/tmp/analyst-ci/install-home python -m venv .venv
-          sudo env -i PATH="$PATH" HOME=/tmp/analyst-ci/install-home python -m pip download --index-url https://pypi.org/simple --only-binary=:all: --require-hashes -r trading-execution/requirements-test.txt -d .wheelhouse
-          sudo env -i PATH="/tmp/analyst-ci/.venv/bin:$PATH" STAGING_ROOT=/tmp/analyst-ci bash tools/staging/offline.sh python -m pip install --no-index --find-links .wheelhouse --require-hashes -r trading-execution/requirements-test.txt
-      - name: Offline package install and disabled-execution tests
-        working-directory: /tmp/analyst-ci/trading-execution
-        run: sudo env -i PATH="/tmp/analyst-ci/.venv/bin:$PATH" STAGING_ROOT=/tmp/analyst-ci bash ../tools/staging/offline.sh bash -c 'python -m pip install --no-index --no-deps --no-build-isolation . && python -m pip check && python -m pytest -q'

@@ -9,19 +9,21 @@ import privacy_scan
 FORBIDDEN_PARTS = {'.hermes', '.vercel', 'node_modules', '.venv', 'venv', '__pycache__',
                    'state', 'learning', 'incidents', 'conf', 'profiles', 'wiki-market',
                    'wiki-ai', 'dist', 'artifacts'}
+FORBIDDEN_TOP_LEVEL = {'automation', 'trading-execution'}
 
 def path_violation(name):
     path=Path(name)
     if path.is_absolute() or '..' in path.parts or FORBIDDEN_PARTS.intersection(path.parts):
         return 'private_runtime_or_external_path'
+    if ((path.parts and path.parts[0] in FORBIDDEN_TOP_LEVEL)
+            or path.parts[:2] == ('deploy', 'jobs')):
+        return 'non_dashboard_public_source'
     if path.name.startswith('.env') and path.name != '.env.example':
         return 'credential_file'
     if path.name in {'auth.json', 'token.txt', 'settings.local.json', 'buy_zone_alerts.json'}:
         return 'credential_or_private_configuration'
     if path.suffix in {'.pem', '.key', '.db', '.sqlite', '.sqlite3', '.log', '.pyc'}:
         return 'credential_or_runtime_extension'
-    if path.parts[:2] == ('trading-execution', 'build'):
-        return 'generated_execution_build'
     if name.startswith('dashboard/public/') and path.suffix=='.json':
         return 'generated_public_payload'
     return None

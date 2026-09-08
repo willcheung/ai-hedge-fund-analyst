@@ -1088,7 +1088,7 @@ function SourceMix({ day }: { day: JournalDay }) {
   const mix = [
     ['News / official', /daily research brief|daily note|news|fed|official|marketwatch|cnbc|yahoo/],
     ['X signal', /x signal|twitter/],
-    ['YouTube / macro', /youtube|meetkevin|fastmoney|cnbc \/ tv|transcript/],
+    ['Macro transcripts', /macro transcript|market media|transcript/],
     ['Blogs / web', /web\/blog|blog|last30days|feeds/],
     ['Wiki memory', /deep dive|ticker|wiki|research/],
   ].filter(([, rx]) => (rx as RegExp).test(sourceText)).map(([label]) => label as string)

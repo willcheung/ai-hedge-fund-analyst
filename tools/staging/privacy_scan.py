@@ -80,13 +80,6 @@ def categories(name, text):
                         continue
                     if value:
                         found.add('hardcoded_private_account_configuration')
-    if name == 'deploy/jobs/definitions.json':
-        try:
-            data = json.loads(text)
-            if any(not j['sourceId'].startswith('synthetic-') or not j['definition']['name'].startswith('Synthetic ') for j in data['jobs']):
-                found.add('non_synthetic_job_declaration')
-        except (ValueError, KeyError, TypeError):
-            found.add('invalid_job_declaration')
     return sorted(found)
 
 
@@ -108,7 +101,7 @@ def source_names(root):
             if path.is_symlink():
                 names.append(relative)
                 dirs.remove(name)
-            elif name in SOURCE_EXCLUDED_DIRS or name.endswith('.egg-info') or relative in {'dashboard/public/market-data', 'trading-execution/build'}:
+            elif name in SOURCE_EXCLUDED_DIRS or name.endswith('.egg-info') or relative == 'dashboard/public/market-data':
                 dirs.remove(name)
         for name in files:
             relative = (base / name).relative_to(root).as_posix()
