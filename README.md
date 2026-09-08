@@ -1,6 +1,10 @@
 # AI Hedge Fund Analyst
+**Version:** 0.1.0
 
-Public source control and **offline staging** for the analyst dashboard, custom automation and disabled execution package. Production is not automatically deployed from this repository.
+Public source control and **offline staging** for the analyst dashboard, custom automation, and disabled execution package. Production is not automatically deployed from this repository.
+
+## Privacy Pledge
+This repository is a sanitized, public synthetic demonstration. It contains NO personal financial data, portfolio holdings, or account identifiers. Contributions must maintain this strict boundary; any commit containing real personal/portfolio data will be rejected by our automated scanners.
 
 ## Start here
 
