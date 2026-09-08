@@ -3,8 +3,8 @@
 .workflow-dependency-card .ops-workflow-head :is(p,.eyebrow) { color: var(--markets-muted); }
 .workflow-dependency-card .ops-summary-strip span { color: var(--markets-foreground); background: var(--markets-hover); border-color: var(--markets-border); }
 .workflow-dependency-explainer { color: var(--markets-muted); font-size: .86rem; line-height: 1.5; }
-.workflow-dependency-scroll { overflow-x: auto; max-width: 100%; min-width: 0; border: 1px solid var(--markets-border); border-radius: 12px; background: radial-gradient(circle at 15% 0%, rgba(14,165,233,.10), transparent 24rem), var(--markets-background); }
-.workflow-dependency-scroll:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 3px; }
+.workflow-dependency-scroll { overflow-x: auto; max-width: 100%; min-width: 0; border: 1px solid var(--markets-border); border-radius: 12px; background: radial-gradient(circle at 15% 0%, var(--markets-selected), transparent 24rem), var(--markets-background); }
+.workflow-dependency-scroll:focus-visible { outline: 2px solid var(--markets-focus); outline-offset: 3px; }
 .workflow-dependency-canvas { position: relative; width: 1205px; min-width: 1205px; }
 .workflow-dependency-canvas svg { position: absolute; inset: 0; overflow: visible; color: var(--markets-primary); }
 .workflow-dependency-canvas svg > path { fill: none; stroke: var(--markets-primary); stroke-width: 1.6; }
