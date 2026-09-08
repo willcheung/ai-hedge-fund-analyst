@@ -2,7 +2,7 @@
 
 **Version:** 0.1.0
 
-This public repository contains only the dashboard source and a synthetic, offline demo. It is not a production system and does not deploy or publish anything automatically.
+This public repository contains only the dashboard source and a synthetic, offline demo. It is not a production system and does not deploy or publish anything automatically. See it in action at https://market-analyst.vibecodingdad.com/.
 
 ## Privacy boundary
 
