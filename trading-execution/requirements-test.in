@@ -1,3 +1,0 @@
--e .[dev]
-setuptools>=83.0.0,<84
-wheel>=0.45,<0.47

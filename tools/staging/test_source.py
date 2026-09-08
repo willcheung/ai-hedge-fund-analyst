@@ -5,13 +5,17 @@ import check_source as checks
 
 class SourceBoundaryTests(unittest.TestCase):
     def test_safe_source_and_explicit_env_template(self):
-        self.assertIsNone(checks.path_violation('automation/collector.py'))
-        self.assertIsNone(checks.path_violation('deploy/.env.example'))
+        self.assertIsNone(checks.path_violation('dashboard/scripts/generate.py'))
         self.assertIsNone(checks.path_violation('dashboard/schema/public-snapshot.json'))
 
+    def test_removed_top_level_source_trees_fail(self):
+        for path in ['automation/collector.py', 'deploy/jobs/definitions.json',
+                     'trading-execution/src/router.py']:
+            with self.subTest(path=path):
+                self.assertEqual(checks.path_violation(path), 'non_dashboard_public_source')
+
     def test_private_and_generated_paths_fail(self):
-        for path in ['.env', 'deploy/.env.production', 'trading-execution/conf/token.txt',
-                     'dashboard/public/wiki-data.json', 'trading-execution/build/lib/module.py', 'x/state/results.json',
+        for path in ['.env', 'dashboard/public/wiki-data.json', 'x/state/results.json',
                      '.hermes/auth.json', 'foo/node_modules/index.js', 'wiki-market/index.md']:
             with self.subTest(path=path):
                 self.assertIsNotNone(checks.path_violation(path))
@@ -37,42 +41,6 @@ class InventoryTests(unittest.TestCase):
             (root / '.venv/package.py').write_text('pass')
             (root / 'link').symlink_to(root / '.venv', target_is_directory=True)
             self.assertEqual(source_names(root), ['.env', 'link', 'test.py'])
-
-    def test_execution_build_recreation_keeps_exact_manifest_and_nearby_source(self):
-        import json
-        from privacy_scan import source_names
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            # Similar names, other build trees and credential paths remain visible.
-            visible = ['SOURCE-MANIFEST.json', 'trading-execution/build.py',
-                       'trading-execution/build-source/module.py', 'other/build/module.py',
-                       'trading-execution/conf/token.txt', 'trading-execution/.env']
-            for name in visible:
-                path = root / name
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text('')
-            manifest = root / 'SOURCE-MANIFEST.json'
-            manifest.write_text(json.dumps({'format_version': 2, 'files': sorted(visible)}))
-            before = manifest.read_bytes()
-            self.assertEqual(source_names(root), sorted(visible))
-            generated = root / 'trading-execution/build/lib/package/module.py'
-            generated.parent.mkdir(parents=True)
-            generated.write_text('raise RuntimeError("generated copy must not import")')
-            self.assertEqual(source_names(root), sorted(visible))
-            self.assertEqual(checks.inspect_manifest(root, source_names(root)), [])
-            self.assertEqual(manifest.read_bytes(), before)
-            self.assertIsNotNone(checks.path_violation(generated.relative_to(root).as_posix()))
-
-    def test_execution_build_symlink_is_not_excluded(self):
-        from privacy_scan import source_names, inspect
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            (root / 'trading-execution').mkdir()
-            (root / 'target').mkdir()
-            (root / 'trading-execution/build').symlink_to(root / 'target', target_is_directory=True)
-            self.assertEqual(source_names(root), ['trading-execution/build'])
-            self.assertEqual(inspect(root, source_names(root)),
-                             [{'path': 'trading-execution/build', 'category': 'symlink'}])
 
     def test_manifest_detects_extra_missing_and_duplicate_entries(self):
         import json

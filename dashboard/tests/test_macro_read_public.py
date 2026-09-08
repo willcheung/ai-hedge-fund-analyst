@@ -32,22 +32,22 @@ class MacroReadTests(unittest.TestCase):
         return path
 
     def test_available_views_remain_opinions_not_consensus(self):
-        a = self.note('meetkevin', '2026-09-06', '## Creator Recommendations / Opinions\n- Bullish: AI can reduce costs; Synthetic Devices revenue remains strong.\n- Bearish: Oil pressure may keep yields high.\n')
-        b = self.note('fastmoney', '2026-09-06', '## Macro Themes\n### Rates\n- [01:00-01:04] Lower oil prices may ease inflation. ^[raw/transcripts/example.json]\n')
+        a = self.note('macro_transcripts', '2026-09-06', '## Creator Recommendations / Opinions\n- Bullish: AI can reduce costs; Synthetic Devices revenue remains strong.\n- Bearish: Oil pressure may keep yields high.\n')
+        b = self.note('market_media', '2026-09-06', '## Macro Themes\n### Rates\n- [01:00-01:04] Lower oil prices may ease inflation. ^[raw/transcripts/example.json]\n')
         original = {p: p.read_bytes() for p in (a,b)}
         read = gen.macro_opinion_read(now=NOW)
         text = ' '.join(read)
         for fact in ('AI can reduce costs', 'Synthetic Devices revenue', 'yields high', 'Lower oil prices'):
             self.assertIn(fact, text)
-        for word in ('MeetKevin', 'Fast Money', 'YouTube', 'consensus', 'confidence', 'agree'):
+        for word in ('presenter', 'host', 'video platform', 'consensus', 'confidence', 'agree'):
             self.assertNotIn(word, text)
         self.assertIn('2 available commentary notes', text)
         for p, raw in original.items(): self.assertEqual(p.read_bytes(), raw)
 
     def test_degraded_latest_never_resurrects_older_opinion(self):
-        self.note('meetkevin', '2026-09-06', '## Creator Recommendations / Opinions\n- Bullish: AI can reduce costs.\n')
-        self.note('fastmoney', '2026-09-05', '## Macro Themes\n- Stocks may rally.\n')
-        self.note('fastmoney', '2026-09-06', '# Fast Money degraded transcript\nTreat this source as degraded/no-signal for today.\n')
+        self.note('macro_transcripts', '2026-09-06', '## Creator Recommendations / Opinions\n- Bullish: AI can reduce costs.\n')
+        self.note('market_media', '2026-09-05', '## Macro Themes\n- Stocks may rally.\n')
+        self.note('market_media', '2026-09-06', '# Public media degraded transcript\nTreat this source as degraded/no-signal for today.\n')
         text = ' '.join(gen.macro_opinion_read(now=NOW))
         self.assertIn('1 available commentary note', text)
         self.assertIn('unavailable', text)
@@ -62,21 +62,21 @@ class MacroReadTests(unittest.TestCase):
         for day, body in cases:
             with self.subTest(day=day, body=body):
                 for p in self.wiki.glob('daily/*/*.md'): p.unlink()
-                self.note('fastmoney', day, body)
+                self.note('market_media', day, body)
                 text = ' '.join(gen.macro_opinion_read(now=NOW))
                 self.assertIn('No current publishable commentary', text)
                 self.assertNotIn('Stocks may rally', text)
                 self.assertNotIn('$100000', text)
 
     def test_named_attribution_is_withheld_only_in_macro_projection(self):
-        self.note('meetkevin', '2026-09-06', '## Creator Recommendations / Opinions\n- Bullish: Kevin says stocks will rise.\n- Bearish: Synthetic Devices demand may slow.\n')
+        self.note('macro_transcripts', '2026-09-06', '## Creator Recommendations / Opinions\n- Bullish: Presenter says stocks will rise.\n- Bearish: Synthetic Devices demand may slow.\n')
         text = ' '.join(gen.macro_opinion_read(now=NOW))
-        self.assertNotIn('Kevin', text)
+        self.assertNotIn('Presenter', text)
         self.assertIn('Synthetic Devices demand may slow', text)
-        self.assertEqual(clean_narrative('Kevin says Synthetic Devices revenue grew.'), 'Kevin says Synthetic Devices revenue grew.')
+        self.assertEqual(clean_narrative('A commentator says Synthetic Devices revenue grew.'), 'A commentator says Synthetic Devices revenue grew.')
 
     def test_explicit_private_note_is_not_projected(self):
-        self.note('meetkevin', '2026-09-06', 'privacy_class: private\n## Creator Recommendations / Opinions\n- Bullish: Secret analysis suggests stocks may rise.\n')
+        self.note('macro_transcripts', '2026-09-06', 'privacy_class: private\n## Creator Recommendations / Opinions\n- Bullish: Secret analysis suggests stocks may rise.\n')
         text = ' '.join(gen.macro_opinion_read(now=NOW))
         self.assertIn('No current publishable commentary', text)
         self.assertNotIn('Secret', text)

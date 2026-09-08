@@ -32,10 +32,6 @@
 **/credentials*.json
 **/settings.local.json
 **/buy_zone_alerts.json
-trading-execution/configs/
 dashboard/public/*.json
 dashboard/public/docs/
 .DS_Store
-
-# Execution package installation copies modules here; never public source.
-/trading-execution/build/

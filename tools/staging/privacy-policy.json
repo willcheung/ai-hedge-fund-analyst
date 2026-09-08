@@ -1,11 +1,5 @@
 [
   {
-    "path": "dashboard/scripts/generate_wiki_data.py",
-    "category": "owner_financial_association",
-    "line_sha256": "ea8789d85780b8b4752650868a9711dd03a42aece550692b109665a66940ee09",
-    "reason": "Generic investor/operator social-media accounts, no financial account or holdings fact."
-  },
-  {
     "path": "dashboard/scripts/public_snapshot.py",
     "category": "private_absolute_root",
     "line_sha256": "99c3e60caf834e76a1b5cff1d4df4d278ebf3872182e8438d26326326b00f455",
@@ -202,48 +196,6 @@
     "category": "private_absolute_root",
     "line_sha256": "534f13369c0934f203b982c83e6b1377c52221d16d549e3a3049344b83c899e9",
     "reason": "Invented adversarial input or rejection assertion; preserve privacy/transport regression."
-  },
-  {
-    "path": "deploy/jobs/test_job_definitions.py",
-    "category": "private_absolute_root",
-    "line_sha256": "567b6343e8cd62a6a22683924a8e0e0bcea368b4a4cca5539de3d4c177582c20",
-    "reason": "Invented relocated home used by declarative export regression."
-  },
-  {
-    "path": "deploy/jobs/test_job_definitions.py",
-    "category": "private_absolute_root",
-    "line_sha256": "25b7c24ae192c5ef2aeb9d1b8687102663c42f2555d7d0bb9e070974566b2c47",
-    "reason": "Invented relocated home used by declarative export regression."
-  },
-  {
-    "path": "deploy/jobs/test_job_definitions.py",
-    "category": "private_absolute_root",
-    "line_sha256": "07d1f68d08c96de73f187d0ee926474d8d237c27e1172ad4fc117dda3ff25c22",
-    "reason": "Invented relocated home used by declarative export regression."
-  },
-  {
-    "path": "deploy/jobs/test_job_definitions.py",
-    "category": "private_absolute_root",
-    "line_sha256": "dfb4be543916d32c3f206ee8e61e1f85d97fee106463b6572b6cc3d9a47d1977",
-    "reason": "Invented relocated home used by declarative export regression."
-  },
-  {
-    "path": "automation/gold_trader.py",
-    "category": "deployment_identifier",
-    "line_sha256": "0888b83ae325ad5fdb4f0b1fecc1278ed7d12c9cc679edec372e54c953cea306",
-    "reason": "Public BLS economic series identifier."
-  },
-  {
-    "path": "automation/gold_trader.py",
-    "category": "deployment_identifier",
-    "line_sha256": "b7ded790d39588e503c12217c3dca628b1b5e1c03830802a189f16cc33d65865",
-    "reason": "Public BLS economic series identifier."
-  },
-  {
-    "path": "automation/path_watch_monitor.py",
-    "category": "deployment_identifier",
-    "line_sha256": "3366b9603ef5d8302f92b608aaee881b415e08be475eb55f7781c05dc633a4d2",
-    "reason": "Public SEC issuer CIK identifier."
   },
   {
     "path": "tools/staging/test_privacy.py",

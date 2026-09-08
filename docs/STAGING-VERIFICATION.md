@@ -1,13 +1,17 @@
-# Public staging verification scope
+# Public dashboard verification scope
 
-Offline verification uses synthetic data, disabled execution defaults and the shared `tools/staging/offline.sh` launcher. See `RELEASE.md` for dependency installation and isolation boundaries. Historical private import, job/skill audit and deployment receipts have been removed; this document does not carry forward their test counts or live coverage claims.
+Verification covers only the public dashboard source and its synthetic offline demo. Private automations, Hermes jobs, trading execution, wiki contents, credentials, live snapshots, and portfolio/account data are separate and are never synchronized or imported. No public automation source is present.
 
-The source gate combines path/syntax checks with `tools/staging/privacy_scan.py`. It enumerates current source without Git or index access and reports paths/categories only. `python3 tools/staging/privacy_scan.py` scans every component. Dependency/tool metadata and generated build output are excluded from source enumeration; generated dashboard output must pass the separate byte-exact demo gate. The manifest gate checks that the current file inventory is exact. The documented [privacy policy](../tools/staging/PRIVACY-POLICY.md) covers exact synthetic exceptions, forbidden private inputs and permitted public metadata. Pattern scanning requires human review and cannot prove arbitrary prose contains no private associations.
+`tools/staging/check_source.py` combines path and syntax checks, an exact `SOURCE-MANIFEST.json` comparison, and `tools/staging/privacy_scan.py`. Enumeration does not consult Git, so tracked and untracked source are both covered. Tool metadata, installed dependencies, caches, and generated build output are excluded; generated dashboard JSON has a separate byte-exact synthetic demo gate.
 
-Application tests must use a clean environment and the isolation wrapper. Namespace creation failure blocks application validation; never bypass it. No broker, external wiki, scheduler, publishing, remote GitHub or credentials are needed for source review. Optional vendor/media integrations and external runtime contracts remain unverified.
+The path gate explicitly rejects the removed `automation/`, `deploy/jobs/`, and `trading-execution/` trees. Privacy scanning retains strict patterns and AST checks for private paths, identifiers, endpoints, personal email, financial associations, account values, portfolio values, and embedded private account configuration. Exact line receipts remain limited to reviewed synthetic adversarial fixtures and public metadata; there are no directory-wide exemptions.
 
-The repository remains public. Current-source cleanup does not sanitize Git history, remove previously published data or establish a production migration. Real deployment configuration and financial inputs belong outside the public checkout.
+Application tests run with `tools/staging/offline.sh`. Bubblewrap must establish its filesystem, process, environment, and network boundaries; failure to create namespaces blocks application validation and must not be bypassed. Source review needs no broker, external wiki, scheduler, publisher, remote GitHub access, or credentials.
 
-No historical test receipt certifies this integrated tree. Run every current CI
-suite and the synthetic build in successful isolation before release; browser
-smoke checks and remote release checks remain separate gates.
+The current workflow has exactly three jobs:
+
+- `source-safety`: history secret scan plus preflight, source, privacy, and isolation regressions.
+- `dashboard-python`: locked Python dependencies and dashboard tests inside isolation.
+- `dashboard-js-build`: locked dependencies, dashboard tests/build/privacy checks inside isolation, then a synthetic artifact.
+
+Static pattern scanning cannot prove arbitrary prose is public, and current-source cleanup does not rewrite Git history. Human diff/history review and remote branch protections remain required before merging.

@@ -10,7 +10,7 @@ from public_content import clean_narrative, sanitize_legacy
 class EmptyMonitorResearchTests(unittest.TestCase):
     def test_monitor_receipts_do_not_become_research_updates(self):
         fragments = [
-            'No new usable MeetKevin .txt transcripts were modified in the 24h lookback, so no evening macro transcript brief was produced.',
+            'No new usable macro-source .txt transcripts were modified in the 24h lookback, so no evening macro transcript brief was produced.',
             'Appended log entry: log.md',
             'Minority Mindset remained disabled and was not inspected.',
             'Warnings are pre-existing lint debt; this run introduced no failures.',

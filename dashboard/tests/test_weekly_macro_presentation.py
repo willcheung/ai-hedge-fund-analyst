@@ -42,10 +42,10 @@ class PresentationTest(unittest.TestCase):
             self.assertEqual(weekly_selection('synthetic-job-08','2026-09-06_23-20-25','Revenue $8.25M. SYNTHC.',root),'')
 
     def test_macro_keeps_authored_stance_confidence_without_inventory(self):
-        old={'jobId':'synthetic-job-0d','jobName':'MeetKevin Transcript Read','summary':'MeetKevin stance: cautious/selective — AI demand is real, but not enough to justify more risk.','highlights':['MeetKevin — Fictional Presenter warning — https://www.youtube.com/watch?v=abc — stance: neutral/cautious — confidence: medium after CNBC/CNN cross-check']}
+        old={'jobId':'synthetic-job-0d','jobName':'Macro Transcript Read','summary':'Macro transcript source stance: cautious/selective — AI demand is real, but not enough to justify more risk.','highlights':['Public presenter warning — https://media.example.com/watch/abc — stance: neutral/cautious — confidence: medium after primary-source cross-check']}
         original=copy.deepcopy(old); row=macro_row(old); text=json.dumps(row)
         self.assertEqual(old, original)
-        for bad in ('MeetKevin','Fictional Presenter','youtube.com','CNBC'): self.assertNotIn(bad,text)
+        for bad in ('Public presenter','media.example.com','primary-source'): self.assertNotIn(bad,text)
         for good in ('cautious/selective','not enough','neutral/cautious','evidence confidence: medium'): self.assertIn(good,text)
         self.assertEqual(neutral_macro_text(neutral_macro_text(row['summary'])),row['summary'])
         self.assertEqual(macro_row({'jobId':'company','summary':'CNBC reported Synthetic Devices revenue rose.'})['summary'],'CNBC reported Synthetic Devices revenue rose.')
@@ -53,16 +53,16 @@ class PresentationTest(unittest.TestCase):
     def test_empty_macro_receipt_does_not_resurrect_prior_commentary(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp); p=root/'output/synthetic-job-0d'; p.mkdir(parents=True)
-            (p/'2026-09-07_02-05-57.md').write_text('# Cron Job: Daily Macro Transcript Analysis (MeetKevin)\n**Run Time:** 2026-09-07 02:05:57\n## Response\n# Macro transcript monitor\nNo new usable MeetKevin .txt transcripts were modified in the 24h lookback, so no evening macro transcript brief was produced.\n')
+            (p/'2026-09-07_02-05-57.md').write_text('# Cron Job: Daily Macro Transcript Analysis\n**Run Time:** 2026-09-07 02:05:57\n## Response\n# Macro transcript monitor\nNo new usable macro-source .txt transcripts were modified in the 24h lookback, so no evening macro transcript brief was produced.\n')
             with patch.object(g,'WIKI',root), patch.object(g,'CRON_ROOT',root), patch.object(g,'load_cron_jobs',return_value=[]):
                 self.assertEqual(g.parse_cron_timeline(), [])
 
     def test_retained_macro_publication_cannot_resurrect_names_urls(self):
-        record={'schemaVersion':1,'id':'brief:macro','jobId':'synthetic-job-0d','type':'brief','title':'Evening Macro Transcript Read','summary':'MeetKevin stance: cautious.','publishedAt':None,'informationAt':None,'tickers':[], 'sections':[{'heading':'Research','markdown':'MeetKevin — scary title — https://www.youtube.com/watch?v=abc — stance: neutral — confidence: medium','sourceIds':['a']}], 'sources':[{'id':'a','title':'youtube.com','url':'https://www.youtube.com/watch?v=abc'}]}
+        record={'schemaVersion':1,'id':'brief:macro','jobId':'synthetic-job-0d','type':'brief','title':'Evening Macro Transcript Read','summary':'Macro transcript source stance: cautious.','publishedAt':None,'informationAt':None,'tickers':[], 'sections':[{'heading':'Research','markdown':'Public presenter — synthetic title — https://media.example.com/watch/abc — stance: neutral — confidence: medium','sourceIds':['a']}], 'sources':[{'id':'a','title':'media.example.com','url':'https://media.example.com/watch/abc'}]}
         out=normalize_publication(record)
         self.assertEqual(out['title'],'Macro Read')
         self.assertEqual(out['sources'],[])
-        self.assertNotIn('youtube',json.dumps(out))
+        self.assertNotIn('media.example.com',json.dumps(out))
         self.assertEqual(normalize_publication(out),out)
 
 if __name__=='__main__': unittest.main()

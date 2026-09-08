@@ -29,8 +29,7 @@ email may receive the same narrowly reviewed treatment; licenses are not exempt.
 
 Adding or changing a receipt requires reading the source and documenting why it
 is public or invented. Real embedded personal, operational or financial facts must
-be removed or externalized. Synthetic job identities use explicit synthetic tokens
-where schemas permit them; do not hide data through string concatenation.
+be removed or externalized. Do not hide data through string concatenation.
 
 Tests require every receipt to match a current detectable source line. Copied
 literals, changed lines, appended values, new lines and real-shaped synthetic

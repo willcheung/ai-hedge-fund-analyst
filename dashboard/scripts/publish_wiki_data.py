@@ -48,7 +48,7 @@ FORBIDDEN_KEY_FRAGMENTS = (
 )
 FORBIDDEN_KEY_EXACT = {"token"}
 FORBIDDEN_TEXT = (
-    "/root/", "data/portfolio", "data/private", "private_local_only", "robinhood_access_token",
+    "/root/", "data/portfolio", "data/private", "private_local_only", "broker_access_token",
     "rhs_account_number", "current rh net", "dry powder", "goal gap",
 )
 PUBLIC_PRIVACY_VALUES = {None, "", "public", "public_ok"}

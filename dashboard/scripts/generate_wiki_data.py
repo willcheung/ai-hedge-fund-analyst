@@ -37,7 +37,7 @@ WIKI = WIKI_ROOT
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'public' / 'wiki-data.json'
 TRADINGVIEW_CACHE = CACHE_ROOT / 'tradingview-symbols.json'
-PRIVATE_PATH_PARTS = {'data/portfolio', 'robinhood', '.env'}
+PRIVATE_PATH_PARTS = {'data/portfolio', 'brokerage', '.env'}
 
 
 
@@ -406,7 +406,7 @@ SHORTLIST_JOB_SPECS = (
     ("explosive_radar", "Explosive Stock Radar", r"^Weekly Explosive Misunderstood Stock Radar$", "discovery", "Surfaces misunderstood candidates; any list change remains a reviewed agent decision", ["queries/daily_monitor_queue.md", "tickers/*.md"]),
     ("last30days_monthly", "Monthly Signal Scan", r"^last30days Monthly Signal-Only", "discovery", "Adds typed social/news leads from a bounded monthly source pack", ["raw/briefings/source_packs/last30days_monthly_signal_*.md"]),
     ("last30days_midweek", "Midweek Crowding Check", r"^last30days Midweek Crowding Check", "discovery", "Adds crowding context; cannot promote without company proof", ["raw/briefings/source_packs/last30days_midweek_crowding_*.md"]),
-    ("x_referral", "X Source-Roster Discovery", r"^X Referral Graph Discovery", "discovery", "Maintains the monitored source roster; context-only, not a core signal dependency", ["raw/signals/*referral*.json"]),
+    ("x_referral", "Social Source Discovery", r"^Social Source Discovery", "discovery", "Maintains an anonymous source set; context-only, not a core signal dependency", ["raw/signals/*referral*.json"]),
     ("weekly_deep_dive", "Weekly Stock Analysis", r"^(?:Weekly Hybrid Stock Deep Dive|Weekly Stock Analysis)$", "research", "Produces or refreshes ticker theses and proof/kill gates", ["tickers/*.md", "research-queue.md"]),
     ("weekly_hygiene", "Weekly Wiki Research Refresh", r"^Weekly Market-Wiki Hygiene \+ Research Refresh$", "research", "Rotates stale ticker research and repairs coverage", ["tickers/*.md", "research-queue.md"]),
     ("rerate", "Re-rate Monitor", r"^Re-rate monitor$", "research", "Rechecks close-watch names after business evidence changes", ["queries/daily_monitor_queue.md", "tickers/*.md"]),
@@ -418,10 +418,10 @@ SHORTLIST_JOB_SPECS = (
     ("morning_brief", "Morning Market Briefing", r"^Morning Market Briefing$", "market", "Supplies macro, breadth, exposure, and event context", ["daily/briefs/YYYY-MM-DD.md", "raw/briefings/tradermonty/"] ),
     ("price_watchdog", "Intraday Price-Zone Watchdog", r"^Intraday Equity Price-Zone Watchdog", "market", "Refreshes quote/entry-zone state; never promotes on price alone", ["data/automation/intraday_equity_watchdog.json"]),
     ("fast_money", "CNBC Fast Money Transcript", r"^CNBC Fast Money Transcript", "market", "Adds transcript/macro context; an OK job may still represent a deliberately degraded source note", ["daily/fastmoney/*.md"]),
-    ("daily_macro_transcript", "Daily Macro Transcript Analysis", r"^Daily Macro Transcript Analysis", "market", "Adds macro narrative and conditional ticker evidence", ["daily/meetkevin/*.md"]),
+    ("daily_macro_transcript", "Daily Macro Transcript Analysis", r"^Daily Macro Transcript Analysis", "market", "Adds macro narrative and conditional ticker evidence", ["daily/macro_transcripts/*.md"]),
     ("precious_metals", "Precious Metals Macro Scan", r"^Precious Metals Daily Macro Scan", "market", "Adds rates, dollar, liquidity, and metals regime context", ["research/precious_metals/latest.md"]),
-    ("macro_shift", "Macro Regime Shift Monitor", r"^(?:CalConviction macro regime shift monitor|Market Brief — Macro regime shift monitor)$", "market", "Writes only material regime changes; global context cannot promote a ticker alone", ["daily/briefs/macro_shift_*.md", "daily/briefs/market_brief_macro_shift_*.md"]),
-    ("portfolio_radar", "Portfolio Overlap Radar", r"^Robinhood Portfolio Monitor \+ Asymmetric Trade Radar$", "portfolio", "Refreshes private overlap/fit used by the capital gate", ["data/automation/main_portfolio_broker_access_status.json"]),
+    ("macro_shift", "Macro Regime Shift Monitor", r"^Market Brief — Macro regime shift monitor$", "market", "Writes only material regime changes; global context cannot promote a ticker alone", ["daily/briefs/macro_shift_*.md", "daily/briefs/market_brief_macro_shift_*.md"]),
+    ("portfolio_data", "Portfolio-data Integration", r"^Portfolio-data Integration$", "portfolio", "Provides privacy-filtered portfolio context to the capital gate", ["data/automation/portfolio_data_integration_status.json"]),
     ("freshness_gate_job", "Market Wiki Freshness Gate", r"^Market Wiki Freshness Gate$", "gate", "Runs the canonical builder and fails closed on stale dependencies", ["data/automation/current_asymmetric_shortlist_latest.json"]),
     ("integrity_watchdog", "MarketWiki Integrity Watchdog", r"^MarketWiki daily freshness \+ integrity watchdog$", "delivery", "Checks the generated Wiki decision surfaces", ["data/automation/shortlist_freshness_gate_latest.json"]),
     ("blob_publisher", "Dashboard Data Publisher", r"^MarketWiki independent data publisher", "delivery", "Builds, validates, publishes, and reads back the public snapshot", ["market-data/manifest.json"]),
@@ -1494,11 +1494,11 @@ def latest_daily_paths(days: int = 14) -> list[Path]:
 
     The dashboard is a daily journal. Sorting by modified-time caused older source
     files from a date to crowd out the actual Daily Research Brief for that same
-    date, which made some days look like a one-source Fast Money/MeetKevin dump.
+    date, which made some days look like a one-source media/transcript dump.
     """
     folders = [
         WIKI / 'daily', WIKI / 'daily' / 'briefs', WIKI / 'daily' / 'feeds',
-        WIKI / 'daily' / 'meetkevin', WIKI / 'daily' / 'fastmoney', WIKI / 'daily' / 'podcasts',
+        WIKI / 'daily' / 'macro_transcripts', WIKI / 'daily' / 'market_media', WIKI / 'daily' / 'podcasts',
         WIKI / 'daily' / 'deep_dives', WIKI / 'daily' / 'prices',
     ]
     files: list[Path] = []
@@ -1523,9 +1523,9 @@ def latest_daily_paths(days: int = 14) -> list[Path]:
             kind = 2
         elif 'deep_dives' in rel:
             kind = 3
-        elif 'meetkevin' in rel:
+        elif 'macro_transcripts' in rel:
             kind = 4
-        elif 'fastmoney' in rel:
+        elif 'market_media' in rel:
             kind = 5
         elif 'podcasts' in rel:
             kind = 6
@@ -1752,12 +1752,12 @@ def source_label(path: Path, fm: dict[str, Any], body: str) -> str:
     rel = '/' + str(path.relative_to(WIKI)).lower()
     if '/briefs/' in rel and re.fullmatch(r'20\d{2}-\d{2}-\d{2}\.md', path.name):
         return 'Daily research brief'
-    if 'fastmoney' in s:
-        return 'CNBC / TV'
+    if 'market_media' in s:
+        return 'Public market media'
     if 'podcast' in s or 'podcast' in fm.get('type', ''):
         return 'Podcast'
-    if 'meetkevin' in s or 'youtube' in s or 'transcript' in fm.get('type', ''):
-        return 'YouTube'
+    if 'macro_transcripts' in s or 'transcript' in fm.get('type', ''):
+        return 'Macro transcript source'
     if 'deep_dives' in s:
         return 'Deep dive'
     if 'feeds' in s or 'last30days' in s:
@@ -1963,18 +1963,16 @@ def parse_daily_journal(tickers: list[dict[str, Any]] | None = None) -> list[dic
 
 def parse_sources() -> list[dict[str, Any]]:
     x_files = sorted((WIKI / 'raw' / 'signals').glob('x_signals_*.json'), key=lambda p: p.stat().st_mtime, reverse=True)
-    x_accounts: list[str] = []
     x_count = 0
     if x_files:
         try:
             d = json.loads(read(x_files[0]))
             x_count = int(d.get('account_count') or len(d.get('accounts', {})))
-            x_accounts = list(d.get('accounts', {}).keys())[:22]
         except Exception:
             pass
     return [
-        {'name': 'X / Twitter investor list', 'role': 'Find early signal and consensus shifts', 'summary': f'Curated X list scanner watches {x_count or "dozens of"} investor/operator accounts for cross-account ticker convergence, bookmarks/likes, long-form theses, and new theme language.', 'examples': x_accounts, 'howUsed': 'Good for surfacing leads and changing sentiment; never enough by itself to buy without primary-source proof.'},
-        {'name': 'YouTube / macro creators', 'role': 'Translate creator/macro videos into trade-relevant notes', 'summary': 'MeetKevin and other transcript sources are turned into macro, index, fintech/software, oil/geopolitical, and portfolio-impact notes.', 'examples': ['Meet Kevin transcripts', 'Fast Money transcripts / insights'], 'howUsed': 'Used for regime context and near-term risk, not as standalone stock underwriting.'},
+        {'name': 'Public social signals', 'role': 'Find early signal and consensus shifts', 'summary': f'An anonymized public-source scanner watches {x_count or "dozens of"} sources for cross-source ticker convergence, long-form theses, and new theme language.', 'examples': [], 'howUsed': 'Good for surfacing leads and changing sentiment; never enough by itself to buy without primary-source proof.'},
+        {'name': 'Macro transcript sources', 'role': 'Translate public macro commentary into trade-relevant notes', 'summary': 'Public transcript sources are turned into macro, index, sector, geopolitical, and portfolio-impact notes.', 'examples': ['Macro transcript source', 'Public market-media transcript'], 'howUsed': 'Used for regime context and near-term risk, not as standalone stock underwriting.'},
         {'name': 'Company filings, press releases, IR pages', 'role': 'Verify numbers and kill bad narratives', 'summary': 'Primary-source articles, earnings releases, 8-K/6-K/10-Q excerpts, investor presentations, and company news are saved under raw articles/briefings.', 'examples': ['SEC/EDGAR excerpts', 'IR earnings releases', 'Investor presentations'], 'howUsed': 'This is the evidence layer for War Room summaries, conviction-list upgrades, proof gates, and kill triggers.'},
         {'name': 'Market data / APIs', 'role': 'Daily market posture and event calendar', 'summary': 'Breadth, macro-regime, exposure-posture, earnings calendar, price snapshots, and signal-scanner raw data feed the command center.', 'examples': ['TraderMonty breadth/regime reports', 'Nasdaq earnings calendar', 'price snapshots', 'FMP/Finnhub-style data feeds'], 'howUsed': 'Used to decide how hard to press new ideas and which catalyst windows matter now.'},
         {'name': 'Blogs / web research / deep dives', 'role': 'Theme research and thesis development', 'summary': 'Last-30-days web sweeps, manual deep dives, papers, and blog/article notes are synthesized into daily journal entries and ticker pages.', 'examples': ['AI power', 'CPO/photonics', 'neoclouds', 'memory/HBM', 'robotics/physical AI'], 'howUsed': 'Used to build watchlists and answer “what is this?” before a full War Room refresh is needed.'},
@@ -2101,10 +2099,10 @@ def parse_coverage() -> list[dict[str, Any]]:
         },
         {
             'name': 'Macro / media tape', 'emoji': '🎥', 'cadence': 'Daily / weekday transcript ingestion',
-            'whatItCovers': 'MeetKevin, Minority Mindset, CNBC Fast Money, macro creator framing, index levels, oil/geopolitical risk, and TV sentiment.',
+            'whatItCovers': 'Public macro transcripts, market-media framing, index levels, oil/geopolitical risk, and broad sentiment.',
             'dashboardRole': 'Provides context and narrative color, but gets weighted below primary data and company proof.',
             'jobs': pick_jobs(jobs, ['Daily Macro Transcript', 'CNBC Fast Money']),
-            'artifacts': [artifact(latest_file(['daily/meetkevin/*.md']), 'Latest MeetKevin / macro video note'), artifact(latest_file(['daily/fastmoney/*.md']), 'Latest CNBC Fast Money note')],
+            'artifacts': [artifact(latest_file(['daily/macro_transcripts/*.md']), 'Latest macro transcript note'), artifact(latest_file(['daily/market_media/*.md']), 'Latest public market-media note')],
         },
         {
             'name': 'Metals / futures monitor', 'emoji': '🥇', 'cadence': 'Weekday pre-market/post-market + central-bank alert checks',
@@ -2115,9 +2113,9 @@ def parse_coverage() -> list[dict[str, Any]]:
         },
         {
             'name': 'Publishing / social amplification', 'emoji': '📣', 'cadence': 'Multiple weekly slots',
-            'whatItCovers': 'CalConviction public posts, watchlists, replies, weekly conviction list, and post-close takes.',
+            'whatItCovers': 'Public posts, watchlists, replies, weekly research summaries, and post-close takes.',
             'dashboardRole': 'Not an input source by itself; included so the command center shows where research gets converted into public output.',
-            'jobs': pick_jobs(jobs, ['CalConviction']),
+            'jobs': pick_jobs(jobs, ['Public Publishing Workflow']),
             'artifacts': [artifact(latest_file(['log.md']), 'Wiki activity log')],
         },
     ]
@@ -2262,7 +2260,7 @@ def is_market_decision_job(job_name: str) -> bool:
     excluded = [
         'dashboard', 'publish', 'deploy', 'hygiene', 'checker', 'freshness gate',
         'auto-scheduler', 'ingestion', 'builder', 'recovery pilot', 'execution watchdog',
-        'e2e tester', 'memory & skill', 'calconviction',
+        'e2e tester', 'memory & skill', 'public publishing workflow',
     ]
     if any(term in name for term in excluded):
         return False
@@ -2469,7 +2467,7 @@ def section_lines(markdown: str, heading: str, limit: int = 6) -> list[str]:
         line = sanitize_private_numbers(raw.strip().strip('- '))
         if not line or line.startswith('|---') or line == '|':
             continue
-        if 'data/portfolio/' in line or 'robinhood_mcp_latest' in line:
+        if 'data/portfolio/' in line or 'brokerage_snapshot_latest' in line:
             continue
         lines.append(line)
         if len(lines) >= limit:
@@ -2478,7 +2476,7 @@ def section_lines(markdown: str, heading: str, limit: int = 6) -> list[str]:
 
 
 def dollarize_candidate_line(line: str) -> str:
-    """Make Robinhood candidate rows scannable: `1. ONDS — ...` -> `1. $ONDS — ...`."""
+    """Make portfolio-integration candidate rows scannable."""
     line = re.sub(r'^(\s*\d+\.\s+)(?!\$)([A-Z][A-Z0-9]{1,7})(\s+[—-])', r'\1$\2\3', line)
     line = re.sub(r'^(\s*[-*•]\s+)(?!\$)([A-Z][A-Z0-9]{1,7})(\s+[—-])', r'\1$\2\3', line)
     return line
@@ -2560,8 +2558,8 @@ def macro_opinion_read(*, now: datetime | None = None) -> list[str]:
     views: list[str] = []
     available = 0
     gaps: list[str] = []
-    attribution = re.compile(r'(?i)\b(?:meet\s*kevin|kevin|fast\s*money|cnbc|youtube|minority\s*mindset|cathie\s*wood|dan\s*nathan|guy\s*adami|karen(?:\s*finerman)?|melissa\s*lee)\b|https?://')
-    for lane in ('meetkevin', 'fastmoney'):
+    attribution = re.compile(r'(?i)\b(?:macro transcript source|public market media|presenter|host|creator)\s+(?:says?|argues?|warns?)\b|https?://')
+    for lane in ('macro_transcripts', 'market_media'):
         dated = []
         for path in (WIKI / 'daily' / lane).glob('*.md'):
             match = re.fullmatch(re.escape(lane) + r'_(\d{4}-\d{2}-\d{2})\.md', path.name)
@@ -2711,19 +2709,19 @@ def canonical_macro_posture() -> dict[str, Any] | None:
     }
 
 
-def parse_robinhood_agentic_trading_report() -> dict[str, Any] | None:
+def parse_portfolio_data_integration_report() -> dict[str, Any] | None:
     cron_path = latest_cron_output('synthetic-job-03')
-    raw_files = sorted((WIKI / 'raw' / 'briefings').glob('agentic_robinhood_20*.md'), key=lambda p: p.stat().st_mtime, reverse=True)
+    raw_files = sorted((WIKI / 'raw' / 'briefings').glob('portfolio_data_integration_20*.md'), key=lambda p: p.stat().st_mtime, reverse=True)
     candidates = [p for p in [cron_path, *(raw_files[:1])] if p]
     if not candidates:
         return None
     path = sorted(candidates, key=lambda p: p.stat().st_mtime, reverse=True)[0]
     text = read(path)
     response = text.split('## Response', 1)[-1] if '## Response' in text else text
-    title = next((clean_inline(l.lstrip('# ')) for l in response.splitlines() if l.startswith('## Agentic Robinhood Account Report')), '')
+    title = next((clean_inline(l.lstrip('# ')) for l in response.splitlines() if l.startswith('## Portfolio-data Integration Report')), '')
     is_agentic_account = bool(title)
     if not title:
-        title = next((clean_inline(l.lstrip('# ')) for l in response.splitlines() if l.startswith('## Post-Market Portfolio Monitor')), 'Robinhood portfolio monitor')
+        title = next((clean_inline(l.lstrip('# ')) for l in response.splitlines() if l.startswith('## Post-Market Portfolio-data Summary')), 'Portfolio-data integration summary')
     date_match = re.search(r'(20\d{2}-\d{2}-\d{2})', title) or re.search(r'(20\d{2}-\d{2}-\d{2})', path.name)
     if is_agentic_account:
         account = section_lines(response, 'Account scope', 5)
@@ -2732,7 +2730,7 @@ def parse_robinhood_agentic_trading_report() -> dict[str, Any] | None:
         candidates = [dollarize_candidate_line(x) for x in section_lines(response, 'Candidate watchlist', 8)]
         action = section_lines(response, 'Proposed next action', 6)
         status_lines = section_lines(response, 'Status', 3)
-        summary = sanitize_private_numbers(' '.join((status_lines or account or macro)[:3]))[:320] or 'Latest Agentic Robinhood account report.'
+        summary = sanitize_private_numbers(' '.join((status_lines or account or macro)[:3]))[:320] or 'Latest privacy-filtered portfolio-data integration report.'
         status = summary
         traffic = '🟡'
         if re.search(r'\b(do not trade|cash|wait)\b', summary + ' ' + ' '.join(action), re.I):
@@ -2750,7 +2748,7 @@ def parse_robinhood_agentic_trading_report() -> dict[str, Any] | None:
         ] if c['text']]
         notes = [
             'Optional isolated execution summary; excluded from the public demo.',
-            'Real Robinhood orders remain explicit-confirmation gated after order review.',
+            'Any broker action remains explicit-confirmation gated after order review.',
         ]
     else:
         first = response.split('## Portfolio Change Headline', 1)[0]
@@ -2759,7 +2757,7 @@ def parse_robinhood_agentic_trading_report() -> dict[str, Any] | None:
         metals = section_lines(response, 'Metals / GLD-SLV Options', 6)
         action = section_lines(response, 'Action Items', 7)
         score = section_lines(response, 'Scorecard', 8)
-        summary = 'Latest Robinhood portfolio/radar run captured macro dial, concentration drift, metals/options risk, and action items. Raw account values stay private.'
+        summary = 'Latest portfolio-data integration captured macro context, concentration drift, risk notes, and action items. Raw account values stay private.'
         if macro:
             summary = sanitize_private_numbers(' '.join(macro[:3]))[:320]
         status = 'Legacy default-portfolio report — superseded by Agentic account scope on the next run'
@@ -2773,10 +2771,10 @@ def parse_robinhood_agentic_trading_report() -> dict[str, Any] | None:
         ] if c['text']]
         notes = [
             'Legacy report used the default portfolio; future runs are pinned to the Agentic account.',
-            'Real Robinhood orders remain explicit-confirmation gated after order review.',
+            'Any broker action remains explicit-confirmation gated after order review.',
         ]
     return {
-        'lane': 'Equities / Robinhood Agentic',
+        'lane': 'Portfolio-data integration',
         'date': date_match.group(1) if date_match else '',
         'title': title,
         'sourcePath': str(path.relative_to(WIKI)) if str(path).startswith(str(WIKI)) else f'cron/output/synthetic-job-03/{path.name}',
@@ -2789,7 +2787,7 @@ def parse_robinhood_agentic_trading_report() -> dict[str, Any] | None:
 
 
 def parse_agentic_trading_reports() -> list[dict[str, Any]]:
-    reports = [parse_agentic_trading_report(), parse_robinhood_agentic_trading_report()]
+    reports = [parse_agentic_trading_report(), parse_portfolio_data_integration_report()]
     return [r for r in reports if r]
 
 
