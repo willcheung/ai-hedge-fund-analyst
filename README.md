@@ -18,7 +18,7 @@ Contributions must preserve that boundary. Source checks reject private material
 - `SOURCE-MANIFEST.json`: exact current public source inventory, including untracked source files.
 - `UPSTREAM.json`: metadata for Hermes as a separate external dependency; no Hermes source, environment, jobs, or runtime data is present.
 
-See [dashboard/README.md](dashboard/README.md), [staging verification](docs/STAGING-VERIFICATION.md), [release guidance](docs/RELEASE.md), and [SECURITY.md](SECURITY.md).
+See [dashboard/README.md](dashboard/README.md), the [design system](dashboard/docs/design-system.md), [staging verification](docs/STAGING-VERIFICATION.md), [release guidance](docs/RELEASE.md), and [SECURITY.md](SECURITY.md).
 
 ## Verify locally
 
