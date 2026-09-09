@@ -18,6 +18,8 @@ pub = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader
 SPEC.loader.exec_module(pub)
 
+from public_snapshot import unavailable_macro_regime_meter
+
 ORIGIN = "https://store.public.blob.vercel-storage.com"
 
 
@@ -132,13 +134,14 @@ class PublisherTest(unittest.TestCase):
         health_sections = {
             section: dict(health_row) for section in (
                 "counts", "actionBuckets", "topTags", "categoryCounts", "marketPosture",
-                "dailyJournal", "cronTimeline",
+                "dailyJournal", "cronTimeline", "macroRegimeMeter",
                 "intradayEquityWatchdog", "marketGraphs", "currentAsymmetricShortlist",
                 "aiProjectionExhibits", "aiWarRoomCompleteData", "sources", "tickers",
             )
         }
         snapshot = {
             "schemaVersion": 1,
+            "macroRegimeMeter": unavailable_macro_regime_meter("Canonical artifact was not supplied"),
             "publications": [],
             "dataAsOf": "2026-08-09T01:00:00Z",
             "refreshMode": "runtime-manifest",

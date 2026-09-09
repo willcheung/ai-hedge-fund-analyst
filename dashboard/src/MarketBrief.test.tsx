@@ -12,13 +12,13 @@ describe('Market Brief full article', () => {
     const html = draw({})
     expect(html).toContain('Short overview')
     expect(html).toContain('First point')
-    expect(html).not.toContain('Read full Market Brief')
+    expect(html).not.toContain('Read full article')
   })
 
   it('renders the complete article, sixth name, provenance and caveat in a native expander', () => {
     const body = '# $SYNTHB evidence\n\nHistorical note dated September 4; not current advice.\n\n## Key points\n' + Array.from({ length: 6 }, (_, i) => `- $SYNTHB evidence item ${i + 1}`).join('\n') + '\n\n## Sources\n- [Primary filing](https://example.com/filing)\n- https://example.com/SYNTHB\n\nFinal caveat after the summary and bullet limit.'
     const html = draw({ articleBody: body })
-    expect(html).toContain('<details class="source-details"><summary>Read full Market Brief</summary>')
+    expect(html).toContain('<details class="source-details"><summary>Read full article</summary>')
     expect(html).not.toContain(item.sourcePath)
     expect(html).toContain('Source reference unavailable')
     expect(html).toContain('evidence item 6')

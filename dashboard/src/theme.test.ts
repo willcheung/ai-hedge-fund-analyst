@@ -1,12 +1,20 @@
 // SYNTHETIC regression inputs only; no research snapshot dependencies.
 import { describe, expect, it } from 'vitest'
 import html from '../index.html?raw'
+import themeCss from './theme.css?raw'
 
 function runInNewContext(script: string, context: Record<string, unknown>) {
   // Execute only the repository-owned initialization script with isolated browser doubles.
   new Function(...Object.keys(context), script)(...Object.values(context))
 }
 import { resolvePreference, resolveTheme, THEME_STORAGE_KEY } from './theme'
+
+describe('Markets markdown headings', () => {
+  it('overrides legacy heading colors with the current shell foreground token', () => {
+    // Include h4/h5: legacy CSS gives these explicit pale colors of their own.
+    expect(themeCss).toMatch(/\.markets-app \.markdown-output :is\(h3, h4, h5\)\s*\{\s*color:\s*var\(--markets-foreground\);\s*\}/)
+  })
+})
 
 describe('theme preference', () => {
   it.each([null, undefined, '', 'auto', 'DARK', {}, 1])('defaults invalid preference %s to system', value => {

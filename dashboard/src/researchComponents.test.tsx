@@ -2,9 +2,10 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { formatPrice, formatPercent, formatChange, parseTickerMentions, Quote, Ticker, Narrative, Status, ThesisUpdate, type KnownSymbols } from './researchComponents';
+import { formatPrice, formatPercent, formatChange, parseTickerMentions, Quote, Ticker, Narrative, ResearchHeadline, Status, ThesisUpdate, type KnownSymbols } from './researchComponents';
 
 const known: KnownSymbols = [{ symbol: 'SYNTHA', href: '#research/SYNTHA' }, { symbol: '0000.HK', exchange: 'HKEX' }, { symbol: 'SYNTHI', exchange: 'AMS' }];
+const aiKnown: KnownSymbols = [{ symbol: 'AI', href: '#research/AI' }, { symbol: 'SYNTHB', href: '#research/SYNTHB' }];
 const html = (node: React.ReactNode) => renderToStaticMarkup(<>{node}</>);
 
 describe('financial formatting', () => {
@@ -33,7 +34,7 @@ describe('financial formatting', () => {
     expect(output).toContain('data-direction="positive"');
     expect(output).toContain('+$2.34');
     expect(output).toContain('Stale quote');
-    expect(output).toContain('UTC');
+    expect(output).toContain('EST');
     expect(html(<Quote quote={{ ...quote, change: { ...quote.change, asOf: '2026-01-01T16:00:00Z' } }} />)).not.toContain('+$2.34');
     expect(html(<Quote quote={{ ...quote, change: { ...quote.change, trusted: false } }} />)).not.toContain('+$2.34');
     expect(html(<Quote quote={{ ...quote, change: { ...quote.change, period: 'week' } }} />)).not.toContain('+$2.34');
@@ -42,6 +43,19 @@ describe('financial formatting', () => {
 });
 
 describe('known symbol parsing', () => {
+  it('preserves AI prose exactly while recognizing explicit $AI and ordinary SYNTHB', () => {
+    const text = 'AI infrastructure, generative AI, AI-led growth; $AI and SYNTHB.';
+    const tokens = parseTickerMentions(text, aiKnown);
+    expect(tokens.filter(t => t.type === 'ticker').map(t => [t.text, t.symbol])).toEqual([['$AI', 'AI'], ['SYNTHB', 'SYNTHB']]);
+    expect(tokens.map(t => t.text).join('')).toBe(text);
+  });
+  it('still requires explicit $AI to be known and outside protected text and token substrings', () => {
+    expect(parseTickerMentions('$AI', []).filter(t => t.type === 'ticker')).toHaveLength(0);
+    const text = '`$AI` [$AI](https://example.com/AI) https://example.com/$AI X$AI $AIx';
+    const tokens = parseTickerMentions(text, aiKnown);
+    expect(tokens.filter(t => t.type === 'ticker')).toHaveLength(0);
+    expect(tokens.map(t => t.text).join('')).toBe(text);
+  });
   it('accepts canonical international symbols and exchange forms, not money or substrings', () => {
     const tokens = parseTickerMentions('$SYNTHA SYNTHA $0000.HK AMS:SYNTHI $500 $USD XSYNTHA SYNTHAx', known);
     expect(tokens.filter(t => t.type === 'ticker').map(t => t.symbol)).toEqual(['SYNTHA', 'SYNTHA', '0000.HK', 'SYNTHI']);
@@ -64,6 +78,33 @@ describe('known symbol parsing', () => {
 });
 
 describe('safe shared narrative', () => {
+  for (const Renderer of [Narrative, ResearchHeadline]) {
+    describe(Renderer.name, () => {
+      it.each(['AI infrastructure', 'generative AI', 'AI-led'])('keeps %s as exact plain text', content => {
+        const output = html(<Renderer content={content} knownSymbols={aiKnown} />);
+        expect(output).not.toContain('<a');
+        expect(output).not.toContain('ticker');
+        expect(output.replace(/<[^>]*>/g, '')).toBe(content);
+      });
+      it('preserves explicit markdown links and links eligible $AI and SYNTHB without rewriting text', () => {
+        const content = 'AI infrastructure, **generative AI**, *AI-led*; [AI](https://example.com/AI), [$AI](https://example.com/company), $AI and SYNTHB.';
+        const output = html(<Renderer content={content} knownSymbols={aiKnown} />);
+        expect(output).toContain('href="https://example.com/AI" rel="noopener noreferrer">AI</a>');
+        expect(output).toContain('href="https://example.com/company" rel="noopener noreferrer">$AI</a>');
+        expect(output).toContain('href="#research/AI">$AI</a>');
+        expect(output).toContain('href="#research/SYNTHB">SYNTHB</a>');
+        expect(output.match(/<a /g)).toHaveLength(4);
+        expect(output.replace(/<[^>]*>/g, '')).toBe('AI infrastructure, generative AI, AI-led; AI, $AI, $AI and SYNTHB.');
+      });
+      it('keeps $AI unlinked without an eligible destination', () => {
+        for (const knownSymbols of [[], [{ symbol: 'AI' }], [{ symbol: 'AI', href: 'javascript:alert(1)' }]]) {
+          const output = html(<Renderer content="$AI" knownSymbols={knownSymbols} />);
+          expect(output).not.toContain('<a');
+          expect(output.replace(/<[^>]*>/g, '')).toBe('$AI');
+        }
+      });
+    });
+  }
   it('renders headings, emphasis, lists, quotes and tables, retaining emoji and conditions', () => {
     const output = html(<Narrative knownSymbols={known} content={'## View\n\n📌 **$SYNTHA** may improve only if revenue grows; do not buy yet.\n\n- 🟡 Evidence pending\n- Risk remains\n\n> Not a recommendation\n\n| Metric | Value |\n| --- | ---: |\n| Margin | 12% |'} />);
     for (const tag of ['<h2>', '<strong>', '<ul>', '<blockquote>', '<table>']) expect(output).toContain(tag);

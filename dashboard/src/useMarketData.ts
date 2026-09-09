@@ -59,7 +59,7 @@ type VisibilityDocument = {
 
 type RuntimeOptions<T> = {
   validateData: (value: unknown) => value is T
-  /** Explicit build-time staging mode. Never inferred from a remote failure. */
+  /** True selects staged data; false permits only remote or validated cached data. */
   bundledOnly?: boolean
   getState: () => MarketDataState<T>
   applyState: (state: MarketDataState<T>) => void
@@ -154,9 +154,9 @@ export function startMarketDataRuntime<T>(options: RuntimeOptions<T>): MarketDat
         hasFallback = true
       }
     } catch {
-      // A missing or corrupt cache falls through to the bundled, schema-validated fallback.
+      // A missing or corrupt cache may use a bundle only outside explicit live mode.
     }
-    if (!hasFallback && !disposed) {
+    if (!hasFallback && !disposed && options.bundledOnly !== false) {
       try {
         const bundled = await bundledLoader(undefined, options.validateData)
         if (!disposed) apply(stateFromLoad(bundled, now))

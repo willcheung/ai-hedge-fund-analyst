@@ -56,9 +56,9 @@ function Badge({status}: {status: OpsStatus}) { return <span className="workflow
 const sections = [
   ['tickers', 'Company research', 'Research directory and company pages'],
   ['cronTimeline', 'Published run timeline', 'Daily Brief timeline'],
-  ['dailyJournal', 'Market journal', 'CIO supporting evidence'],
+  ['dailyJournal', 'Market journal', 'Daily Brief market context'],
   ['marketPosture', 'Market posture', 'Upstream publication adaptation and legacy sources'],
-  ['currentAsymmetricShortlist', 'Shortlist membership', 'CIO membership and supporting evidence'],
+  ['currentAsymmetricShortlist', 'Shortlist membership', 'Conviction List membership'],
   ['aiProjectionExhibits', 'Projection exhibits', 'Valuation analysis'],
   ['aiWarRoomCompleteData', 'Extended valuation research', 'Valuation analysis'],
   ['marketGraphs', 'Workflow checks', 'Workflow Ops only'],

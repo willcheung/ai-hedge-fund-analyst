@@ -17,7 +17,8 @@
     "build:bundled": "npm run build",
     "test:unit": "npm run test:python && npm run test:js",
     "validate:integration": "python3 scripts/validate_section_contract.py --integration",
-    "validate:privacy": "python3 scripts/validate_demo_privacy.py"
+    "validate:privacy": "python3 scripts/validate_demo_privacy.py",
+    "build:live": "npm run validate:design && npm run validate:contract && tsc --noEmit && vite build --mode live"
   },
   "dependencies": {
     "@vercel/analytics": "2.0.1",

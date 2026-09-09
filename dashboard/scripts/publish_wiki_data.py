@@ -159,6 +159,15 @@ def canonical_json(value: Any) -> bytes:
 
 
 def _validate_schema(value: Any, schema_path: Path, label: str) -> None:
+    if schema_path == SNAPSHOT_SCHEMA:
+        # Share exact decimal meter validation and producer semantics with the
+        # generator; binary float multipleOf checks reject valid tenths.
+        from public_snapshot import validate_public_snapshot_schema
+        try:
+            validate_public_snapshot_schema(value)
+        except ValueError as exc:
+            raise PublishError(f"{label}_invalid", str(exc)) from exc
+        return
     try:
         from jsonschema import Draft202012Validator, FormatChecker
         schema = json.loads(schema_path.read_text(encoding="utf-8"))

@@ -1,0 +1,32 @@
+.macro-meter { margin: 1rem 0 2rem; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid var(--markets-border); border-radius: 12px; background: var(--markets-surface); color: var(--markets-foreground); }
+.macro-meter-head { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.macro-meter h2 { margin: 0; font-size: 1.3rem; }
+.macro-meter-reading { font-size: 1.15rem; }
+.macro-meter-meta { color: var(--markets-muted); font-size: .85rem; }
+.macro-meter-track { position: relative; padding-top: 28px; margin: .5rem 0; }
+.macro-meter-colors { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; overflow: hidden; border-radius: 4px; }
+.macro-meter-colors span { height: 1rem; background: var(--macro-meter-zone-1); }
+.macro-meter-colors span:nth-child(2) { background: var(--macro-meter-zone-2); }
+.macro-meter-colors span:nth-child(3) { background: var(--macro-meter-zone-3); }
+.macro-meter-colors span:nth-child(4) { background: var(--macro-meter-zone-4); }
+.macro-meter-colors span:nth-child(5) { background: var(--macro-meter-zone-5); }
+.macro-meter-colors span:nth-child(6) { background: var(--macro-meter-zone-6); }
+/* Clamp the shoulders, never the tip or the score line. The white halo
+   separates the black pointer from both dark surfaces and all six colors. */
+.macro-meter-marker { position: absolute; inset: 0; pointer-events: none; filter: drop-shadow(1px 0 0 var(--macro-meter-halo)) drop-shadow(-1px 0 0 var(--macro-meter-halo)) drop-shadow(0 1px 0 var(--macro-meter-halo)) drop-shadow(0 -1px 0 var(--macro-meter-halo)); }
+.macro-meter-pointer { position: absolute; inset: 0 0 auto; height: 26px; background: var(--macro-meter-pointer); clip-path: polygon(max(0px, calc(var(--meter-position) - 16px)) 0, min(100%, calc(var(--meter-position) + 16px)) 0, var(--meter-position) 100%); }
+.macro-meter-line { position: absolute; left: var(--meter-position); top: 24px; bottom: 0; width: 3px; transform: translateX(-50%); background: var(--macro-meter-pointer); }
+.macro-meter-labels { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; gap: .4rem; }
+.macro-meter-labels li { min-width: 0; font-size: .8rem; overflow-wrap: anywhere; }
+.macro-meter-labels span, .macro-meter-labels small { display: block; margin-top: .3rem; }
+.macro-meter-method { border-top: 1px solid var(--markets-border); padding-top: 1rem; }
+.macro-meter-method summary { cursor: pointer; font-weight: 600; }
+.macro-meter-method summary:focus-visible { outline: 2px solid currentColor; outline-offset: 5px; }
+.macro-meter-pillars { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: .75rem; font-size: .85rem; }
+.macro-meter-pillars th, .macro-meter-pillars td { padding: .5rem .25rem; border-bottom: 1px solid var(--markets-border); text-align: right; font-variant-numeric: tabular-nums; }
+.macro-meter-pillars th:first-child { width: 46%; text-align: left; overflow-wrap: anywhere; }
+.macro-meter-pillars thead th { font-size: .7rem; }
+.macro-meter-pillars tbody th { font-weight: 500; }
+.macro-meter-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@media (max-width: 480px) { .macro-meter-labels li { font-size: .67rem; } .macro-meter-labels small { font-size: .65rem; } }
+@media (forced-colors: active) { .macro-meter-colors span { border: 1px solid CanvasText; } }

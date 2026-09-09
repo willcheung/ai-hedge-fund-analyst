@@ -1,12 +1,15 @@
+import { MacroRegimeMeter } from './MacroRegimeMeter'
+import { isMacroRegimeMeter, type MacroRegimeMeterData } from './macroRegimeContract'
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
-import { Activity, BookOpen, CheckCircle2, Clock3, Database, RadioTower, Search, ShieldCheck, Target, TrendingUp, Zap } from 'lucide-react'
+import { Activity, BookOpen, CheckCircle2, Database, RadioTower, Search, ShieldCheck, TrendingUp } from 'lucide-react'
 import { Bar, Bubble, Scatter } from 'react-chartjs-2'
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Tooltip, type ChartData, type ChartOptions, type Plugin } from 'chart.js'
 import DataTable from 'datatables.net-dt'
 import { hasPublicationContract } from './publicationValidation'
 import { useMarketData, isStagedPreviewBuild, type MarketDataMode } from './useMarketData'
 import { WorkflowOps } from './WorkflowOps'
-import { formatTimestamp, ResearchHeadline } from './researchComponents'
+import { briefText, timelineCategory, timelineInstant, timelineTimestamp, timelineIdentity, cleanObservedPrefixes, macroProse, uniqueMacroHighlights } from './briefPresentation'
+import { formatTimestamp, publicationDay, Narrative } from './researchComponents'
 
 // Canvas cannot resolve CSS variables. Read the shared tokens at each update,
 // including existing charts after an appearance change; leave data/series intact.
@@ -65,8 +68,7 @@ type PortfolioAction = { symbol?: string; stance: string; text: string }
 type JournalDay = { date: string; headline: string; summary: string; marketNarrative?: MarketNarrative; portfolioActions?: PortfolioAction[]; keyTakeaways: string[]; actionCallouts?: ActionCallout[]; goldSilver?: string[]; interestingTickers?: JournalTicker[]; items: JournalItem[]; sourceTypes: string[] }
 type SourceGroup = { name: string; role: string; summary: string; examples: string[]; howUsed: string }
 type CioDecision = { id: string; symbol?: string; scope: string; stance: string; decision: string; rationale: string[]; proof?: string; kill?: string; source: string; severity: 'urgent' | 'warning' | 'info' | 'success' }
-type SourceSignal = { id: string; sourceType: string; title: string; sourcePath: string; signal: string; convergence: string[]; symbols: string[] }
-type CronTimelineItem = { id: string; jobId: string; jobName: string; runTime: string; schedule: string; deliver: string; category: string; sourcePath: string; summary: string; highlights: string[]; articleBody?: string }
+type CronTimelineItem = { id: string; jobId: string; jobName?: string | null; runTime: string; schedule: string; deliver: string; category: string; sourcePath: string; summary?: string | null; highlights: string[]; articleBody?: string }
 type IntradayHit = { symbol: string; action: string; trigger: string; price?: number | null; pct_today?: number | null; wiki_level?: number | null; technical_quality?: string; technical_note?: string; bucket?: string; source_lists?: string[]; context?: string; text?: string }
 type IntradayEquityWatchdog = { last_check_utc: string; monitored_count: number; dashboard_hit_count: number; review_candidate_count: number; slack_policy: string; summary: string; sources: string[]; monitored_symbols: string[]; top_hits: IntradayHit[]; review_candidates: IntradayHit[]; sourcePath: string }
 type GraphDecisionEvent = { id: string; workflowId: string; runId?: string; gate: string; scope: string; decision: string; proof: string[]; blockedBy: string[]; sourcePaths: string[]; slackWorthy: boolean; severity: 'urgent' | 'warning' | 'info' | 'success' | string; generatedAt?: string }
@@ -92,6 +94,7 @@ type DecisionExceptionCandidate = { id: string; symbol?: string; classification?
 type DecisionLearning = { generatedAt?: string; policy?: string; receiptCount?: number; newReceiptCount?: number; integrityGapCount?: number; openExceptionCount?: number; outcomeCount?: number; reviewDueCount?: number; candidateExceptionCount?: number; policyRuleCount?: number; adoptedPolicyRuleCount?: number; unlinkedPolicyRuleCount?: number; casebookCount?: number; casebookPolicy?: string; recentReceipts?: DecisionReceipt[]; openExceptions?: DecisionLearningException[]; recentOutcomes?: DecisionOutcome[]; exceptionCandidates?: DecisionExceptionCandidate[]; handoffs?: Record<string, string> }
 type AsymmetricShortlist = { generatedAt?: string; policy?: string; summary?: Record<string, number | string>; regime?: Record<string, string>; actionChanges?: AsymmetricShortlistActionChange[]; membershipPolicy?: ShortlistMembershipPolicy; runSummary?: ShortlistRunSummary; membershipChanges?: ShortlistMembershipChange[]; automation?: ShortlistAutomation; membershipWorkflow?: ShortlistMembershipWorkflow; rows: AsymmetricShortlistRow[]; decisionLearning?: DecisionLearning | null }
 export type DashboardData = {
+  macroRegimeMeter?: MacroRegimeMeterData
   schemaVersion?: number; generatedAt?: string; dataAsOf?: string; sourceMaxAsOf?: string; refreshMode: string
   counts: { tickers: number; researched: number; stubs: number; reports: number; convictionItems: number; journalDays: number }
   actionBuckets: Record<string, number>; topTags: [string, number][]; categoryCounts: Record<string, number>
@@ -186,6 +189,7 @@ function isSourceData(value: unknown) {
 
 export function isDashboardData(value: unknown): value is DashboardData {
   if (!isRecord(value) || value.schemaVersion !== 1 || !hasString(value, 'refreshMode')) return false
+  if ('macroRegimeMeter' in value && !isMacroRegimeMeter(value.macroRegimeMeter)) return false
   const counts = value.counts
   const privacy = value.privacy
   if (!isRecord(counts) || !['tickers', 'researched', 'stubs', 'reports', 'convictionItems', 'journalDays']
@@ -465,15 +469,6 @@ function headingEmoji(text: string) {
   if (/gold|silver|metals/.test(s)) return '🟡'
   if (/cnbc|fast money|youtube|transcript|podcast/.test(s)) return '🎙️'
   return ''
-}
-function categoryEmoji(text: string) {
-  const s = text.toLowerCase()
-  if (/sentiment|source|radar/.test(s)) return '📡'
-  if (/earnings|catalyst/.test(s)) return '📅'
-  if (/portfolio|stock|decision/.test(s)) return '🎯'
-  if (/market brief|research ops/.test(s)) return '🧠'
-  if (/execution|trading/.test(s)) return '⚙️'
-  return '📝'
 }
 function HeadingContent({ text, symbols, forcedEmoji }: { text: string; symbols?: Set<string>; forcedEmoji?: string }) {
   const icon = forcedEmoji || headingEmoji(text)
@@ -956,33 +951,6 @@ function buildCioDecisions(data: DashboardData): CioDecision[] {
   }).slice(0, 10)
 }
 
-function buildSourceSignals(data: DashboardData): SourceSignal[] {
-  const latest = data.dailyJournal[0]
-  const focusSymbols = new Set([...(latest?.interestingTickers || []).map(t => t.symbol), ...data.focusTickers.map(t => t.symbol)])
-  const signals: SourceSignal[] = []
-  ;(latest?.keyTakeaways || []).filter(x => /x signal read|source pack|sentiment|crowding/i.test(x)).slice(0, 2).forEach((raw, idx) => {
-    const signal = raw.replace(/^[🟢🟡🔴⚪📌⚠️ ]+/, '').trim()
-    const symbols = extractSymbols(signal)
-    signals.push({ id: `brief-signal-${idx}`, sourceType: 'X/news source pack', title: latest?.headline || 'Latest source-pack signal', sourcePath: latest?.items?.[0]?.sourcePath || 'daily brief', signal, convergence: symbols.filter(s => focusSymbols.has(s)).slice(0, 4), symbols: symbols.slice(0, 6) })
-  })
-  ;(latest?.items || []).filter(item => item.sourceType !== 'Daily research brief').forEach((item, idx) => {
-    const candidate = [...(item.highlights || []), item.summary].map(x => (x || '').replace(/^[🟢🟡🔴⚪📌⚠️ ]+/, '').trim()).find(x => x.length > 80 && !/^(raw|source|links|command|verification):/i.test(x) && !/stale feedback|do not reply now/i.test(x))
-    if (!candidate) return
-    const symbols = extractSymbols(candidate)
-    const convergence = symbols.filter(s => focusSymbols.has(s)).slice(0, 4)
-    const meaningful = convergence.length || /macro|fed|liquidity|crowd|sentiment|short|proof|customer|order|backlog|estimate|memory|photonics|power|gold|software|ai/i.test(candidate)
-    if (!meaningful) return
-    signals.push({ id: `${publicSourceReference(item.sourcePath)}-${idx}`, sourceType: item.sourceType, title: item.title, sourcePath: item.sourcePath, signal: candidate, convergence, symbols: symbols.slice(0, 6) })
-  })
-  const seen = new Set<string>()
-  return signals.filter(s => {
-    const key = `${s.sourceType}|${s.signal.slice(0, 100)}`
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  }).slice(0, 6)
-}
-
 function DecisionPill({ severity }: { severity: CioDecision['severity'] }) {
   const label = severity === 'urgent' ? 'Action / risk' : severity === 'warning' ? 'Watch' : severity === 'success' ? 'Opportunity' : 'Info'
   return <span className={cls('decision-pill', severity)}>{label}</span>
@@ -1141,16 +1109,27 @@ function MarketNarrativeCard({ day, symbols }: { day: JournalDay; symbols?: Set<
   </section>
 }
 
-function MarketBriefSupport({ day, data, symbols, onSelectTicker }: { day: JournalDay; data: DashboardData; symbols: Set<string>; onSelectTicker: (symbol: string) => void }) {
+const CANONICAL_MARKET_BRIEF_HEADLINE = /^(?:Daily research brief|Morning Market Briefing)(?:\s*(?:—|–|-|:|\|)\s*.+)?\s*$/i
+
+export function selectLatestMarketBriefDay(days: DashboardData['dailyJournal']) {
+  return days.reduce<JournalDay | undefined>((latest, day) => {
+    const hasCanonicalIdentity = day.items.some(item => item.sourceType === 'Daily research brief') || CANONICAL_MARKET_BRIEF_HEADLINE.test(day.headline.trim())
+    if (!hasCanonicalIdentity) return latest
+    return !latest || day.date > latest.date ? day : latest
+  }, undefined)
+}
+
+export function LatestMarketContextEvidence({ data, onSelectTicker }: { data: DashboardData; onSelectTicker: (symbol: string) => void }) {
+  const day = selectLatestMarketBriefDay(data.dailyJournal)
+  const symbols = new Set([
+    ...data.tickers.map(t => t.symbol),
+    ...(day?.interestingTickers || []).map(t => t.symbol),
+    ...(day?.portfolioActions || []).map(a => a.symbol || ''),
+  ].filter(Boolean))
+  if (!day) return <section className="markets-section latest-market-context"><h2>Market Brief context</h2><p className="markets-empty">Market context is not available in this edition.</p></section>
   const researchSymbols = new Set(data.tickers.map(t => t.symbol))
-  return <section className="cio-card market-brief-support">
-    <div className="section-header"><div><span className="eyebrow">Bridge: market brief → PM decisions</span><h3>Supporting market brief</h3><p>The brief is the tape/source/evidence layer. It supports decisions, but does not equal a buy/sell instruction by itself.</p></div></div>
-    <div className="bridge-grid">
-      <article><strong>Top decisions</strong><p>PM synthesis: actionable status, proof gates, sizing posture, and whether Slack should interrupt.</p></article>
-      <article><strong>Capital queue</strong><p>The membership table is the single decision source; stale or proof-incomplete rows stay blocked.</p></article>
-      <article><strong>Market brief</strong><p>Context layer: macro, tape, sentiment, source-pack read-throughs, and what changed today.</p></article>
-      <article><strong>Brief-mentioned tickers</strong><p>Source/tape leads from the market brief. These are not another buy list unless promoted above.</p></article>
-    </div>
+  return <section className="markets-section latest-market-context">
+    <div className="markets-section-header"><h2>Market Brief context</h2><small className="markets-metadata">{fmtDate(day.date)}</small></div>
     <div className="brief-support-grid">
       <div>
         <MarketNarrativeCard day={day} symbols={symbols} />
@@ -1204,56 +1183,54 @@ function membershipAction(row: AsymmetricShortlistRow) {
 // Explanations paraphrase the canonical shortlist decision rules and section definitions.
 // They describe bucket meaning, never infer a company's assignment from its price or reason.
 export const MEMBERSHIP_BUCKET_GUIDE = [
-  { bucket: 'Buy / Scout Now', label: 'Buy / Scout Now', tone: 'success', meaning: 'Candidate for an initial position. Current research, entry, freshness and risk checks still apply.' },
+  { bucket: 'Buy / Scout Now', label: 'Buy / Scout Now', tone: 'success', meaning: 'The only starter/action-ready status on this page. Current research, entry, freshness and risk checks still apply.' },
   { bucket: 'Wait for Trigger', label: 'Wait for Trigger', tone: 'warning', meaning: 'Wait for the stated entry condition or event. A watch item is not unconditional permission to buy.' },
-  { bucket: 'Add After Proof', label: 'Add After Proof', tone: 'warning', meaning: 'Further buying is conditional on the required business evidence and entry conditions.' },
+  { bucket: 'Add After Proof', label: 'Add After Proof', tone: 'warning', meaning: 'A selected thesis, not current permission to buy. Consider buying only after the required business evidence and entry conditions are satisfied.' },
   { bucket: 'Research Memory / Not Live Action', label: 'Research only', tone: 'neutral', meaning: 'Retain the thesis for research; not a live action candidate. Revisit when the missing evidence arrives.' },
   { bucket: 'Kill / Do Not Average', label: 'Kill / Do Not Average', tone: 'urgent', meaning: 'Not a candidate for averaging down. Reopen only when the stated primary-evidence conditions are met.' },
 ] as const
 
+const TOP_STOCK_PICK_BUCKETS = new Set<string>(['Buy / Scout Now', 'Add After Proof'])
+const TOP_STOCK_PICK_GUIDE = MEMBERSHIP_BUCKET_GUIDE.filter(item=>TOP_STOCK_PICK_BUCKETS.has(item.bucket))
+
+function topStockPickQualificationReason(row: AsymmetricShortlistRow) {
+  if (row.bucketReason?.trim()) return row.bucketReason
+  if (row.bucket === 'Add After Proof') {
+    const proofTrigger = row.proofTrigger?.trim()
+    return proofTrigger
+      ? proofTrigger
+      : 'The source keeps this thesis on the Conviction List, but does not provide the proof trigger required for scaling.'
+  }
+  return 'The source classifies this company as a Buy / Scout Now candidate; no qualification reason was provided.'
+}
+
 export function ShortlistMembershipSection({ shortlist, onSelectTicker }: { shortlist?: AsymmetricShortlist | null; onSelectTicker: (symbol: string) => void }) {
-  if (!shortlist) return <p className="markets-empty">Membership data is unavailable in this edition.</p>
-  const rows = shortlist.rows || []
-  const order = new Map<string, number>(MEMBERSHIP_BUCKET_GUIDE.map((item,index)=>[item.bucket,index]))
+  const rows = (shortlist?.rows || []).filter(row=>TOP_STOCK_PICK_BUCKETS.has(row.bucket))
+  const order = new Map<string, number>(TOP_STOCK_PICK_GUIDE.map((item,index)=>[item.bucket,index]))
   const sortedRows = [...rows].sort((a,b)=>(order.get(a.bucket) ?? 99)-(order.get(b.bucket) ?? 99) || Number(a.rank || 999)-Number(b.rank || 999) || a.symbol.localeCompare(b.symbol))
   const symbols = new Set(rows.map(item=>item.symbol))
-  const missing = rows.filter(row=>!order.has(row.bucket)).length
   return <section className="membership-card membership-compact">
-    <div className="section-header"><div><h3>Membership buckets</h3><p>One company, one bucket, and the source reason.</p></div><small>{rows.length} companies · List updated {fmtDate(shortlist.generatedAt)}</small></div>
-    {missing>0 && <p className="markets-metadata">{missing} company {missing===1?'assignment is':'assignments are'} unavailable in this staged edition. Reasons are retained; no bucket is inferred from them.</p>}
+    <div className="section-header"><h2>Current picks</h2><span className="membership-system-pill">Work in progress</span></div>
+    {!shortlist ? <p className="markets-empty">Conviction List source data is unavailable in this edition. No fallback theses are shown.</p> : rows.length===0 ? <p className="markets-empty">No qualified Conviction List theses are available in this edition.</p> :
     <div className="membership-layout">
-      <div className="table-scroll"><table className="membership-matrix membership-list"><thead><tr><th>Company</th><th>Membership bucket</th><th>Reason</th></tr></thead>
-        <tbody>{sortedRows.map(row=>{const definition=MEMBERSHIP_BUCKET_GUIDE.find(item=>item.bucket===row.bucket);const reason=row.bucketReason || row.whyNotNow || row.entryReason || row.freshnessReason || 'Source reason unavailable.';return <tr key={row.symbol}>
-          <td><button className="text-link membership-ticker" onClick={()=>onSelectTicker(row.symbol)}>${row.symbol}</button></td>
-          <td><span className={cls('membership-bucket-label',definition?.tone || 'neutral')}>{definition?.label || 'Assessment unavailable'}</span></td>
-          <td className="membership-reason"><TickerAware text={reason} symbols={symbols}/></td>
+      <div className="table-scroll"><table className="membership-matrix membership-list"><thead><tr><th>Company</th><th>Pick status</th><th>Why it qualifies</th></tr></thead>
+        <tbody>{sortedRows.map(row=>{const definition=TOP_STOCK_PICK_GUIDE.find(item=>item.bucket===row.bucket);const reason=topStockPickQualificationReason(row);return <tr key={row.symbol} data-top-pick-symbol={row.symbol}>
+          <td data-label="Company"><button className="text-link membership-ticker" onClick={()=>onSelectTicker(row.symbol)}>${row.symbol}</button></td>
+          <td data-label="Pick status"><span className={cls('membership-bucket-label',definition?.tone || 'neutral')}>{definition?.label}</span></td>
+          <td className="membership-reason" data-label="Why it qualifies"><TickerAware text={reason} symbols={symbols}/></td>
         </tr>})}</tbody></table></div>
-      <aside className="membership-guide" aria-label="Membership bucket meanings"><h4>What each bucket means</h4><dl>{MEMBERSHIP_BUCKET_GUIDE.map(item=><div key={item.bucket}><dt className={cls('membership-bucket-label',item.tone)}>{item.label}</dt><dd>{item.meaning}</dd></div>)}</dl>{missing>0&&<p className="markets-metadata">Assessment unavailable means this edition has no usable assignment—not a buy, wait, or sell conclusion.</p>}</aside>
+    </div>}
+    <div className="membership-methodology">
+      <h3>How picks qualify</h3>
+      <p>Each pick is reviewed for business quality, valuation, evidence, and risk—not just price moves or hype. The list includes only Buy / Scout Now and Add After Proof names, with the key evidence still needed shown for each.</p>
     </div>
   </section>
 }
 
 export function CioBrief({ data, onSelectTicker }: { data: DashboardData; onSelectTicker: (symbol: string) => void }) {
-  const latest = data.dailyJournal[0]
-  const knownSymbols = useMemo(() => new Set([...data.tickers.map(t => t.symbol), ...(data.intradayEquityWatchdog?.monitored_symbols || [])]), [data.tickers, data.intradayEquityWatchdog])
-  const sourceSignals = useMemo(() => buildSourceSignals(data), [data])
   const shortlist = data.currentAsymmetricShortlist
   return <section className="cio-page">
     <ShortlistMembershipSection shortlist={shortlist} onSelectTicker={onSelectTicker} />
-
-    {(!!sourceSignals.length || latest) && <details className="cio-card evidence-details">
-      <summary>Supporting evidence and sources</summary>
-      {!!sourceSignals.length && <div className="source-signal-panel compact">
-        <div className="section-header"><div><span className="eyebrow">Commentary and corroboration</span><h3>Only matters if it changes action</h3><p>X / blogs / YouTube / TV are treated as signal, sentiment, or crowding until corroborated by primary proof.</p></div></div>
-        <div className="source-signal-grid">{sourceSignals.slice(0, 3).map(signal => <article key={signal.id}>
-          <div className="source-signal-head"><span>{signal.sourceType}</span>{!!signal.convergence.length && <em>Converges: {signal.convergence.map(s => `$${s}`).join(', ')}</em>}</div>
-          <h4>{signal.title}</h4>
-          <p><TickerAware text={signal.signal} symbols={knownSymbols} /></p>
-          <small>{publicSourceReference(signal.sourcePath)}</small>
-        </article>)}</div>
-      </div>}
-      {latest && <MarketBriefSupport day={latest} data={data} symbols={knownSymbols} onSelectTicker={onSelectTicker} />}
-    </details>}
   </section>
 }
 
@@ -1293,25 +1270,38 @@ function MarketUpdates({ data, onSelectTicker }: { data: DashboardData; onSelect
 
 export function DailyBriefTimeline({ data }: { data: DashboardData }) {
   const headlineSymbols = useMemo(() => data.tickers.map(t => ({symbol: t.symbol, href: `#research/${encodeURIComponent(t.symbol)}`})), [data.tickers])
-  const timeline = useMemo(() => [...(data.cronTimeline || [])].sort((a, b) => (Date.parse(b.runTime) || 0) - (Date.parse(a.runTime) || 0)), [data.cronTimeline])
+  const timeline = useMemo(() => (data.cronTimeline || []).map(item => ({
+    ...item, summary: briefText(item.summary), jobName: briefText(item.jobName),
+  })).sort((a, b) => (Date.parse(timelineInstant(b.runTime)) || 0) - (Date.parse(timelineInstant(a.runTime)) || 0)), [data.cronTimeline])
   const knownSymbols = useMemo(() => new Set([
     ...data.tickers.map(t => t.symbol),
     ...timeline.flatMap(item => extractSymbols(`${item.summary} ${(item.highlights || []).join(' ')} ${item.articleBody || ''}`)),
   ]), [data.tickers, timeline])
 
   return <section className="daily-brief-page">
+    <MacroRegimeMeter meter={data.macroRegimeMeter} />
     <div className="timeline-list">
-      {timeline.map(item => <article className="timeline-item" key={item.id}>
-        <aside><strong>{fmtDate(item.runTime.slice(0,10))}</strong><span>{fmtDate(item.runTime)}</span></aside>
+      {timeline.map(item => {
+        const instant = timelineInstant(item.runTime)
+        const category = timelineCategory(item.jobId, item.category)
+        const macro = category === 'Macro Read'
+        const prose = macro ? macroProse : (text: string) => cleanObservedPrefixes(text).trim()
+        const body = prose(item.articleBody || '')
+        const summary = prose(item.summary)
+        const highlights = (macro ? uniqueMacroHighlights(item.highlights || [], body) : item.highlights || []).map(prose).filter(Boolean)
+        const identity = timelineIdentity(item.jobName, item.category, `${summary} ${highlights.join(' ')} ${body}`, data.tickers.map(t => t.title || ''))
+        return <article className="timeline-item" key={item.id} data-publication-day={publicationDay(instant)}>
+        <aside><time dateTime={instant}>{timelineTimestamp(instant)}</time></aside>
         <section className="timeline-card">
-          <div className="timeline-head"><div><span className="eyebrow timeline-category"><span aria-hidden="true">{categoryEmoji(item.category)}</span>{item.category.toLowerCase() === 'other research job' ? 'Research update' : item.category}</span><h3><ResearchHeadline content={item.jobName || 'Research update'} knownSymbols={headlineSymbols}/></h3></div></div>
-          <p><TickerAware text={item.summary} symbols={knownSymbols} /></p>
-          {!!item.highlights?.length && <ul>{item.highlights.slice(0, 5).map((highlight, i) => <li key={`${item.id}-${i}`}><TickerAware text={highlight} symbols={knownSymbols} /></li>)}</ul>}
-          {item.category === 'Weekly Stock Analysis' && item.articleBody && <section aria-label="Why selected this week"><MarkdownOutput text={item.articleBody} symbols={knownSymbols} /></section>}
-          {item.category === 'Macro Read' && item.articleBody && <section aria-label="Combined macro commentary"><MarkdownOutput text={item.articleBody} symbols={knownSymbols} /></section>}
-          {item.articleBody && !['Weekly Stock Analysis', 'Macro Read'].includes(item.category) && <details className="source-details"><summary>Read full Market Brief</summary><div><small>{publicSourceReference(item.sourcePath)}</small><MarkdownOutput text={item.articleBody} symbols={knownSymbols} /></div></details>}
+          <header className="timeline-head"><span className="eyebrow timeline-category">{category}</span></header>
+          {identity && <Narrative content={identity} knownSymbols={headlineSymbols}/>}
+          {summary && <Narrative content={summary} knownSymbols={headlineSymbols}/>}
+          {!!highlights.length && <ul>{highlights.map((highlight, i) => <li key={`${item.id}-${i}`}><Narrative content={highlight} knownSymbols={headlineSymbols}/></li>)}</ul>}
+          {category === 'Weekly Stock Analysis' && body && <section aria-label="Why selected this week"><MarkdownOutput text={body} symbols={knownSymbols} /></section>}
+          {macro && body && <section aria-label="Combined macro commentary"><MarkdownOutput text={body} symbols={knownSymbols} /></section>}
+          {body && !['Weekly Stock Analysis', 'Macro Read'].includes(category) && <details className="source-details"><summary>Read full article</summary><div><small>{publicSourceReference(item.sourcePath)}</small><MarkdownOutput text={body} symbols={knownSymbols} /></div></details>}
         </section>
-      </article>)}
+      </article>})}
       {!timeline.length && <div className="empty">No material market-changing events found yet.</div>}
     </div>
   </section>
@@ -1746,19 +1736,8 @@ function CloudedJudgementCompsSection({ rows, knownSymbols, showTable = true }: 
 function AiWarRoomCompleteDataSection({ warRoom, knownSymbols, projectionRows, shortlist }: { warRoom: AiWarRoomCompleteData; knownSymbols: Set<string>; projectionRows?: AiProjectionRow[]; shortlist?: AsymmetricShortlist | null }) {
   const rows = warRoom.rows || []
   const aiRows = rows.filter(isAiStockRow)
-  const completed = warRoom.manifest?.completed ?? rows.length
-  const errors = warRoom.manifest?.errors ?? 0
-  const excludedRows = rows.length - aiRows.length
-  const fcfRows = aiRows.filter(isComparableFcfMargin).length
-  const rule40Rows = aiRows.filter(row => ruleOf40(row) !== null).length
   return <section className="ai-war-room-section">
     {projectionRows && <AiCapitalAllocationTable rows={aiRows} projections={projectionRows} knownSymbols={knownSymbols} shortlist={shortlist} />}
-    <section className="strategy-metrics ai-projection-metrics">
-      <MetricCard className={errors ? 'urgent' : 'success'} label="AI rows plotted" value={`${aiRows.length}/${completed}`} sub={`${excludedRows} software/app-layer rows excluded · ${errors} errors`} icon={<Database size={22} />} />
-      <MetricCard label="Category colors" value={Array.from(new Set(aiRows.map(aiCategoryForRow))).length} sub="Power, photonics, semis, infra, robotics, defense" icon={<Target size={22} />} />
-      <MetricCard className={fcfRows ? 'success' : 'warning'} label="FCF margin rows" value={fcfRows} sub={`${rule40Rows} rows support comparable Rule of 40; |FCF margin| &gt; 500% excluded`} icon={<Zap size={22} />} />
-      <MetricCard label="Freshness" value={fmtDate(warRoom.generatedAt).split(',')[0]} sub="Latest research update" icon={<Clock3 size={22} />} />
-    </section>
     <section className="strategy-card ai-chart-gallery"><div className="section-header"><div><h3>Financial and evidence charts</h3><p>Growth/valuation and proof ranking, with category keys repeated on each chart.</p></div></div><div className="ai-chart-grid"><AiWarRoomGrowthScatter rows={aiRows} /><AiWarRoomProofChart rows={aiRows} /></div></section>
     <CloudedJudgementCompsSection rows={aiRows} knownSymbols={knownSymbols} showTable={!projectionRows} />
     {!projectionRows && <AiWarRoomCompleteDataTable rows={aiRows} knownSymbols={knownSymbols} />}

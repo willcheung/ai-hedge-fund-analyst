@@ -46,6 +46,7 @@ def demo_raw(scenario: str) -> dict[str, Any]:
             raw[key] = []
         for key in ("currentAsymmetricShortlist", "aiProjectionExhibits", "aiWarRoomCompleteData", "intradayEquityWatchdog"):
             raw[key] = None
+        raw.pop("macroRegimeMeter", None)
         raw["counts"] = dict.fromkeys(raw["counts"], 0)
         raw["actionBuckets"] = dict.fromkeys(raw["actionBuckets"], 0)
         raw["categoryCounts"] = {}

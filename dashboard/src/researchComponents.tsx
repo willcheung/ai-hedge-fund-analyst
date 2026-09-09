@@ -39,6 +39,22 @@ function instant(value: string | null | undefined): number | null {
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
+const easternTimestamp = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
+  hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
+});
+function easternParts(value: number) {
+  return Object.fromEntries(easternTimestamp.formatToParts(value).map(part => [part.type, part.value]));
+}
+/** Calendar dates have no instant; unknown source timezones must not be guessed. */
+export function publicationDay(value: string | null | undefined): string {
+  const parsed = instant(value);
+  if (parsed !== null) {
+    const p = easternParts(parsed);
+    return `${p.year}-${p.month}-${p.day}`;
+  }
+  return formatTimestamp(value) === 'Timestamp unavailable' ? 'Date unavailable' : value!.slice(0, 10);
+}
 export function formatTimestamp(value: string | null | undefined): string {
   if (value && /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.test(value)) {
     const wallClock = value.replace(' ', 'T');
@@ -48,7 +64,9 @@ export function formatTimestamp(value: string | null | undefined): string {
   }
   if (value && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0,10) === value) return value;
   const parsed = instant(value);
-  return parsed === null ? 'Timestamp unavailable' : `${new Date(parsed).toISOString().replace('T', ' ').replace('.000Z', ' UTC').replace('Z', ' UTC')}`;
+  if (parsed === null) return 'Timestamp unavailable';
+  const p = easternParts(parsed);
+  return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second} ${p.timeZoneName}`;
 }
 export interface QuoteChange {
   absolute?: FinancialValue;
@@ -186,6 +204,8 @@ function parsePlainTickers(text: string, index: Map<string, KnownSymbol>): Ticke
     const end = start + match[0].length;
     const key = match[0].replace(/^\$/, '');
     const info = index.get(key);
+    // AI is usually prose; only an explicitly marked $AI may match this bare symbol.
+    if (match[0] === 'AI') continue;
     if (currencies.has(key) && (!match[0].startsWith('$') || /^\s*\d/.test(text.slice(end)))) continue;
     if (!info || /[\p{L}\p{N}_$@/.:\-]/u.test(text[start - 1] || '') || /[\p{L}\p{N}_$@/:\-]/u.test(text[end] || '') || /^\d+$/.test(key)) continue;
     if (start > cursor) result.push({ type: 'text', text: text.slice(cursor, start) });

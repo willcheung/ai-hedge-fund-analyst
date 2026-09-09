@@ -1,0 +1,629 @@
+[
+  {
+    "name": "weighted score",
+    "path": [
+      "score"
+    ],
+    "value": 9.9
+  },
+  {
+    "name": "impossible band",
+    "path": [
+      "regimeBand"
+    ],
+    "value": "broad_risk_on"
+  },
+  {
+    "name": "wrong posture",
+    "path": [
+      "postureInterpretation"
+    ],
+    "value": "Broad risk participation is supported; retain normal concentration controls."
+  },
+  {
+    "name": "wrong pillar direction",
+    "path": [
+      "pillars",
+      "0",
+      "direction"
+    ],
+    "value": "restrictive"
+  },
+  {
+    "name": "wrong pillar driver",
+    "path": [
+      "pillars",
+      "0",
+      "drivers"
+    ],
+    "value": [
+      "HYG/LQD percentile proxy"
+    ]
+  },
+  {
+    "name": "wrong pillar source",
+    "path": [
+      "pillars",
+      "0",
+      "sourceIds"
+    ],
+    "value": [
+      "tradermonty.hyg_lqd_proxy"
+    ]
+  },
+  {
+    "name": "wrong positive driver",
+    "path": [
+      "positiveDrivers"
+    ],
+    "value": [
+      "HYG/LQD percentile proxy",
+      "HYG/LQD percentile proxy",
+      "HYG/LQD percentile proxy",
+      "HYG/LQD percentile proxy"
+    ]
+  },
+  {
+    "name": "arbitrary reason",
+    "path": [
+      "sourceHealth",
+      "reason"
+    ],
+    "value": "Secret strategy alpha"
+  },
+  {
+    "name": "unsafe path '/etc/input.json'",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "/etc/input.json"
+  },
+  {
+    "name": "unsafe path 'C:/inputs/a.json'",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "C:/inputs/a.json"
+  },
+  {
+    "name": "unsafe path 'C:\\\\inputs\\\\a.json'",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "C:\\inputs\\a.json"
+  },
+  {
+    "name": "unsafe path '\\\\\\\\host\\\\share\\\\a.json'",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "\\\\host\\share\\a.json"
+  },
+  {
+    "name": "unsafe path 'file:///inputs/a.json'",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "file:///inputs/a.json"
+  },
+  {
+    "name": "unsafe path 'https://host/a.json'",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "https://host/a.json"
+  },
+  {
+    "name": "unsafe path '../input.json'",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "../input.json"
+  },
+  {
+    "name": "unsafe path 'raw/../input.json'",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "raw/../input.json"
+  },
+  {
+    "name": "unsafe path 'raw//input.json'",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "raw//input.json"
+  },
+  {
+    "name": "unsafe path 'raw/./input.json'",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "raw/./input.json"
+  },
+  {
+    "name": "unsafe path 'raw/a\\n.json'",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "raw/a\n.json"
+  },
+  {
+    "name": "invalid timestamp 2001-02-30T12:00:00Z",
+    "path": [
+      "generatedAt"
+    ],
+    "value": "2001-02-30T12:00:00Z"
+  },
+  {
+    "name": "invalid timestamp 2001-09-08T12:00:00",
+    "path": [
+      "generatedAt"
+    ],
+    "value": "2001-09-08T12:00:00"
+  },
+  {
+    "name": "invalid timestamp 2001-09-08T24:00:00Z",
+    "path": [
+      "generatedAt"
+    ],
+    "value": "2001-09-08T24:00:00Z"
+  },
+  {
+    "name": "invalid timestamp 2001-09-08T12:00Z",
+    "path": [
+      "generatedAt"
+    ],
+    "value": "2001-09-08T12:00Z"
+  },
+  {
+    "name": "invalid calendar date",
+    "path": [
+      "pillars",
+      "0",
+      "asOf"
+    ],
+    "value": "2001-02-30"
+  },
+  {
+    "name": "excess drivers",
+    "path": [
+      "pillars",
+      "0",
+      "drivers"
+    ],
+    "value": [
+      "HYG/LQD percentile proxy",
+      "HYG/LQD percentile proxy",
+      "HYG/LQD percentile proxy",
+      "HYG/LQD percentile proxy",
+      "HYG/LQD percentile proxy",
+      "HYG/LQD percentile proxy",
+      "HYG/LQD percentile proxy"
+    ]
+  },
+  {
+    "name": "excess sources",
+    "path": [
+      "sourceHealth",
+      "sources"
+    ],
+    "value": [
+      {
+        "id": "tradermonty.hyg_lqd_proxy",
+        "path": "synthetic/inputs/hyg_lqd_proxy.json"
+      },
+      {
+        "id": "tradermonty.hyg_lqd_proxy",
+        "path": "synthetic/inputs/hyg_lqd_proxy.json"
+      },
+      {
+        "id": "tradermonty.hyg_lqd_proxy",
+        "path": "synthetic/inputs/hyg_lqd_proxy.json"
+      },
+      {
+        "id": "tradermonty.hyg_lqd_proxy",
+        "path": "synthetic/inputs/hyg_lqd_proxy.json"
+      },
+      {
+        "id": "tradermonty.hyg_lqd_proxy",
+        "path": "synthetic/inputs/hyg_lqd_proxy.json"
+      },
+      {
+        "id": "tradermonty.hyg_lqd_proxy",
+        "path": "synthetic/inputs/hyg_lqd_proxy.json"
+      },
+      {
+        "id": "tradermonty.hyg_lqd_proxy",
+        "path": "synthetic/inputs/hyg_lqd_proxy.json"
+      },
+      {
+        "id": "tradermonty.hyg_lqd_proxy",
+        "path": "synthetic/inputs/hyg_lqd_proxy.json"
+      },
+      {
+        "id": "tradermonty.hyg_lqd_proxy",
+        "path": "synthetic/inputs/hyg_lqd_proxy.json"
+      }
+    ]
+  },
+  {
+    "name": "unsafe provenance 'raw/a.json\\n'",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "raw/a.json\n"
+  },
+  {
+    "name": "unsafe provenance 'raw/a\\x7f.json'",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "raw/a\u007f.json"
+  },
+  {
+    "name": "non-string band",
+    "path": [
+      "regimeBand"
+    ],
+    "value": [
+      "neutral_mixed"
+    ]
+  },
+  {
+    "name": "boolean schema version",
+    "path": [
+      "schemaVersion"
+    ],
+    "value": true
+  },
+  {
+    "name": "impossible history score and band",
+    "path": [
+      "history"
+    ],
+    "value": [
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 9.9,
+        "regimeBand": "risk_off"
+      }
+    ]
+  },
+  {
+    "name": "history array overflow",
+    "path": [
+      "history"
+    ],
+    "value": [
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      },
+      {
+        "asOf": "2001-09-03",
+        "generatedAt": "2001-09-03T12:00:00Z",
+        "methodologyVersion": "macro-regime-meter-v1",
+        "score": 2.0,
+        "regimeBand": "risk_off"
+      }
+    ]
+  }
+]

@@ -479,7 +479,7 @@ def assert_public_suitability(snapshot):
 
     Transport must reject unsafe historical payloads, not trust a producer badge.
     """
-    legacy={k:v for k,v in snapshot.items() if k not in {'schemaVersion','dataAsOf','refreshMode','focusTickers','sourceHealth','privacy','publications'}}
+    legacy={k:v for k,v in snapshot.items() if k not in {'schemaVersion','dataAsOf','refreshMode','focusTickers','sourceHealth','privacy','publications','macroRegimeMeter'}}
     if has_private_classification(legacy) or sanitize_legacy(legacy) != legacy:
         raise PublicationError('legacy-public-suitability-failed')
     for record in snapshot.get('publications',[]):

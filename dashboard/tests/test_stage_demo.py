@@ -59,6 +59,9 @@ class StageDemoTests(unittest.TestCase):
         self.assertIn("tickers", body["sourceHealth"]["staleSections"])
         self.assertIn("intradayEquityWatchdog", body["sourceHealth"]["missingSections"])
         self.assertEqual(body["counts"]["researched"], 0)
+        self.assertEqual(body["macroRegimeMeter"]["score"], 5.5)
+        self.assertEqual(body["macroRegimeMeter"]["generatedAt"], demo.AS_OF)
+        self.assertTrue(all(source["path"].startswith("synthetic/") for source in body["macroRegimeMeter"]["sourceHealth"]["sources"]))
         self.assertTrue(all(t["isStub"] for t in body["tickers"]))
         self.assertEqual(body["focusTickers"], [])
         self.assertNotIn("automation", body["currentAsymmetricShortlist"])
@@ -83,6 +86,7 @@ class StageDemoTests(unittest.TestCase):
         for key in ("currentAsymmetricShortlist", "aiProjectionExhibits", "aiWarRoomCompleteData", "intradayEquityWatchdog"):
             self.assertIsNone(body[key])
         self.assertEqual(body["counts"]["tickers"], 0)
+        self.assertIsNone(body["macroRegimeMeter"]["score"])
 
     def test_existing_destination_is_never_overwritten(self):
         with tempfile.TemporaryDirectory() as td:

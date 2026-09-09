@@ -3199,6 +3199,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument('--wiki-root', required=True)
     parser.add_argument('--cron-root', required=True)
     parser.add_argument('--output', required=True)
+    parser.add_argument('--macro-meter', type=Path, help='Read an existing producer meter JSON artifact unchanged; never calculate a score')
     parser.add_argument('--quiet', action='store_true')
     parser.add_argument('--offline', action='store_true', help='Read existing artifacts only; no external quote lookups or cache writes')
     args = parser.parse_args(argv)
@@ -3213,7 +3214,24 @@ def main(argv: list[str] | None = None) -> int:
     try:
         require_wiki(WIKI)
         require_wiki(CRON_ROOT)
-        raw, inventory = stable_build(build_legacy_sections, [WIKI, CRON_ROOT], attempts=2)
+        meter_path = args.macro_meter.resolve() if args.macro_meter else None
+        inventory_roots = [WIKI, CRON_ROOT]
+        if meter_path:
+            if meter_path.suffix.lower() != '.json':
+                raise ValueError('macro meter artifact must be JSON')
+            inventory_roots.append(meter_path.parent)
+
+        def build_sections():
+            raw = build_legacy_sections()
+            if meter_path:
+                meter = json.loads(meter_path.read_text(encoding='utf-8'))
+                # Explicit malformed input must fail, not become an unavailable fallback.
+                if not isinstance(meter, dict) or not meter:
+                    raise ValueError('macro meter artifact must be a nonempty object')
+                raw['macroRegimeMeter'] = meter
+            return raw
+
+        raw, inventory = stable_build(build_sections, inventory_roots, attempts=2)
         previous_snapshot = json.loads(OUT.read_text()) if OUT.exists() else {}
         previous = previous_snapshot.get('publications', [])
         raw['cronTimeline'] = sorted(retain_verified_weekly_history(

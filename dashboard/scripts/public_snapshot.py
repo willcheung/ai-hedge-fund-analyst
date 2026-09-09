@@ -10,6 +10,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import tempfile
 import unicodedata
 from dataclasses import dataclass
@@ -42,6 +43,7 @@ PUBLIC_PATH_PREFIXES = (
 # arbitrary source object into the snapshot root.
 PUBLIC_SECTIONS = (
     "counts", "actionBuckets", "topTags", "categoryCounts", "marketPosture",
+    "macroRegimeMeter",
     "dailyJournal", "cronTimeline",
     "intradayEquityWatchdog", "marketGraphs", "currentAsymmetricShortlist",
     "aiProjectionExhibits", "aiWarRoomCompleteData", "sources", "tickers",
@@ -59,6 +61,91 @@ SECTION_PRODUCERS = {
     "aiProjectionExhibits": "synthetic-job-0b",
     "aiWarRoomCompleteData": "synthetic-job-06",
 }
+METER_PILLARS = (
+    ("trend_breadth", "Trend & breadth", 25),
+    ("liquidity_financial_conditions", "Liquidity & financial conditions", 20),
+    ("credit", "Credit", 15),
+    ("growth_earnings", "Growth & earnings", 15),
+    ("inflation_policy", "Inflation & policy", 15),
+    ("volatility_positioning", "Volatility & positioning", 10),
+)
+METER_BAND_LABELS = {
+    "risk_off": "Risk off",
+    "defensive": "Defensive",
+    "neutral_mixed": "Neutral / mixed",
+    "selective_risk_on": "Selective risk on",
+    "constructive": "Constructive",
+    "broad_risk_on": "Broad risk on",
+    "unavailable": "Unavailable",
+}
+METER_SOURCE_IDS = {
+    "tradermonty.market_breadth", "tradermonty.rsp_spy_proxy", "tradermonty.iwm_spy_proxy",
+    "tradermonty.hyg_lqd_proxy", "tradermonty.shy_tlt_proxy",
+}
+METER_UNAVAILABLE_REASONS = {
+    "trend_breadth": "Current complete structured breadth inputs are unavailable",
+    "liquidity_financial_conditions": "No robust current structured daily series",
+    "credit": "Current HYG/LQD proxy is unavailable",
+    "growth_earnings": "No robust current structured daily series",
+    "inflation_policy": "Current SHY/TLT proxy is unavailable",
+    "volatility_positioning": "Current structured VIX or sentiment history is unavailable",
+}
+METER_POSTURES = {'risk_off': 'Preserve risk capacity; require unusually strong proof for new exposure.', 'defensive': 'Keep risk constrained and favor resilience while conditions remain fragile.', 'neutral_mixed': 'Keep sizing selective; wait for broader confirmation before adding risk.', 'selective_risk_on': 'Risk is permitted selectively, with confirmation and disciplined sizing.', 'constructive': 'Conditions support measured risk-taking while normal controls remain in place.', 'broad_risk_on': 'Broad risk participation is supported; retain normal concentration controls.', 'unavailable': 'Insufficient current structured evidence to set macro risk permission.'}
+
+METER_DRIVERS = {
+    "Breadth health plus RSP/SPY and IWM/SPY participation percentiles",
+    "HYG/LQD percentile proxy",
+    "SHY/TLT percentile proxy, inverted because a rising ratio implies duration pressure",
+}
+METER_HEALTH_REASONS = {None, "missing", "Canonical artifact was not supplied", "Canonical artifact is missing or unreadable", "Canonical artifact is not an object", "Canonical artifact failed its closed contract", "Canonical artifact failed its semantic privacy and vocabulary contract"}
+METER_PATH_PATTERN = '^(?![\\s\\S]*[\\x00-\\x20\\x7f])(?!.*[Pp][Rr][Ii][Vv][Aa][Tt][Ee])(?!.*[Aa][Cc][Cc][Oo][Uu][Nn][Tt])(?!.*[Pp][Oo][Rr][Tt][Ff][Oo][Ll][Ii][Oo])(?!.*[Pp][Nn][Ll])(?!.*[Rr][Oo][Bb][Ii][Nn][Hh][Oo][Oo][Dd])(?!.*[Cc][Oo][Ss][Tt][_-]?[Bb][Aa][Ss][Ii][Ss])(?!.*[Dd][Rr][Yy][_-]?[Pp][Oo][Ww][Dd][Ee][Rr])(?!.*[Gg][Oo][Aa][Ll][_-]?[Gg][Aa][Pp])(?!.*\\.\\.)[A-Za-z0-9_-]+(?:[.][A-Za-z0-9_-]+)*(?:/[A-Za-z0-9_-]+(?:[.][A-Za-z0-9_-]+)*)*$'
+METER_INPUTS = {
+    "trend_breadth": (["Breadth health plus RSP/SPY and IWM/SPY participation percentiles"], ["tradermonty.market_breadth", "tradermonty.rsp_spy_proxy", "tradermonty.iwm_spy_proxy"]),
+    "credit": (["HYG/LQD percentile proxy"], ["tradermonty.hyg_lqd_proxy"]),
+    "inflation_policy": (["SHY/TLT percentile proxy, inverted because a rising ratio implies duration pressure"], ["tradermonty.shy_tlt_proxy"]),
+}
+
+
+def _meter_dates(value):
+    if isinstance(value, list):
+        return all(_meter_dates(item) for item in value)
+    if not isinstance(value, dict):
+        return True
+    for key, item in value.items():
+        if key in {"asOf", "comparisonAsOf", "generatedAt"} and item is not None:
+            if not isinstance(item, str):
+                return False
+            pattern = r"[0-9]{4}-[0-9]{2}-[0-9]{2}" if key != "generatedAt" else r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})"
+            if not re.fullmatch(pattern, item):
+                return False
+            try:
+                if key == "generatedAt":
+                    datetime.fromisoformat(item.replace("Z", "+00:00"))
+                    if int(item[11:13]) > 23 or int(item[14:16]) > 59 or int(item[17:19]) > 59 or (item[-1] != "Z" and (int(item[-5:-3]) > 23 or int(item[-2:]) > 59)):
+                        return False
+                else:
+                    date.fromisoformat(item)
+            except ValueError:
+                return False
+        if not _meter_dates(item):
+            return False
+    return True
+
+
+def _meter_band_possible(score, band, daily):
+    bands = list(METER_BAND_LABELS)[:-1]
+    bounds = [(1, 2.9), (3, 4.4), (4.5, 5.9), (6, 7.4), (7.5, 8.9), (9, 10)]
+    index = bands.index(band)
+    low, high = bounds[index]
+    if low <= score <= high:
+        return True
+    if daily.get("status") != "available":
+        return False
+    prior = score - daily["value"]
+    # A confirmed adjacent band may persist for the two tenths at its edge.
+    return low - .2 - 1e-8 <= score <= high + .2 + 1e-8 and low - .2 - 1e-8 <= prior <= high + .2 + 1e-8
+
+
 MARKET_SESSION_SECTIONS = {
     "marketPosture", "currentAsymmetricShortlist", "marketGraphs", "aiProjectionExhibits",
 }
@@ -70,6 +157,27 @@ class PrivacyError(ValueError):
 
 class MixedGenerationError(RuntimeError):
     pass
+
+
+def unavailable_macro_regime_meter(reason: str) -> dict[str, Any]:
+    change = {"status": "unavailable", "value": None, "comparisonAsOf": None}
+    pillars = [
+        {"id": identifier, "label": label, "score": None, "weight": weight, "direction": "unavailable",
+         "confidence": "unavailable", "freshnessStatus": "unavailable", "asOf": None, "drivers": [],
+         "sourceIds": [], "eligibility": False, "reason": METER_UNAVAILABLE_REASONS[identifier]}
+        for identifier, label, weight in METER_PILLARS
+    ]
+    return {
+        "schemaVersion": 1, "methodologyVersion": "macro-regime-meter-v1", "generatedAt": None, "asOf": None,
+        "score": None, "regimeBand": "unavailable", "regimeLabel": "Unavailable", "direction": "unavailable",
+        "dailyChange": dict(change), "weeklyChange": dict(change), "confidence": "unavailable",
+        "freshnessStatus": "unavailable", "postureInterpretation": "Insufficient current structured evidence to set macro risk permission.",
+        "positiveDrivers": [], "negativeDrivers": [], "pillars": pillars,
+        "sourceHealth": {"status": "fail_closed", "eligibleWeight": 0, "minimumEligibleWeight": 55,
+                         "totalWeight": 100, "unavailablePillars": [item[0] for item in METER_PILLARS],
+                         "sources": [], "reason": reason if reason in METER_HEALTH_REASONS else "Canonical artifact is missing or unreadable"},
+        "history": [],
+    }
 
 
 def _nfc(value: Any) -> Any:
@@ -113,18 +221,25 @@ def snapshot_id(body: dict[str, Any]) -> str:
 def validate_public_snapshot_schema(body: dict[str, Any]) -> None:
     """Validate the production DTO against the checked-in Draft 2020-12 contract."""
     from jsonschema import Draft202012Validator, FormatChecker
+    from decimal import Decimal
 
     schema_path = Path(__file__).resolve().parents[1] / "schema" / "public-snapshot-v1.schema.json"
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    # Exact decimal tenths belong only to the meter contract.
+    schema["properties"]["macroRegimeMeter"] = json.loads(json.dumps(schema["properties"]["macroRegimeMeter"]), parse_float=Decimal)
     from referencing import Registry, Resource
     from public_content import SCHEMA as content_schema
     registry = Registry().with_resource(content_schema["$id"], Resource.from_contents(content_schema))
     validator = Draft202012Validator(schema, format_checker=FormatChecker(), registry=registry)
-    errors = sorted(validator.iter_errors(body), key=lambda error: list(error.absolute_path))
+    validation_body = {**body}
+    if "macroRegimeMeter" in body:
+        validation_body["macroRegimeMeter"] = json.loads(json.dumps(body["macroRegimeMeter"]), parse_float=Decimal)
+    errors = sorted(validator.iter_errors(validation_body), key=lambda error: list(error.absolute_path))
     if errors:
         first = errors[0]
         location = ".".join(str(part) for part in first.absolute_path) or "$"
         raise ValueError(f"public snapshot schema violation at {location}: {first.message}")
+    validate_macro_regime_meter_semantics(body.get("macroRegimeMeter"))
 
 
 def _key_token(key: str) -> str:
@@ -157,6 +272,135 @@ def _contains_forbidden_text(value: Any) -> bool:
     if isinstance(value, dict):
         return any(_contains_forbidden_text(item) for item in value.values())
     return False
+
+
+def validate_macro_regime_meter_semantics(value: Any) -> None:
+    """Reject contradictory or non-canonical meter claims before projection."""
+    if not isinstance(value, dict) or type(value.get("schemaVersion")) is not int or value.get("schemaVersion") != 1 or value.get("methodologyVersion") != "macro-regime-meter-v1":
+        raise PrivacyError("macroRegimeMeter has invalid identity")
+    if _contains_forbidden_text(value):
+        raise PrivacyError("macroRegimeMeter contains a forbidden private/path marker")
+    if not isinstance(value.get("regimeBand"), str):
+        raise PrivacyError("macroRegimeMeter band must be a string")
+    if not _meter_dates(value):
+        raise PrivacyError("macroRegimeMeter date is invalid")
+    if value.get("postureInterpretation") != METER_POSTURES.get(value.get("regimeBand")):
+        raise PrivacyError("macroRegimeMeter posture vocabulary is non-canonical")
+    for field in ("positiveDrivers", "negativeDrivers"):
+        if not isinstance(value.get(field), list) or any(driver not in METER_DRIVERS for driver in value[field]):
+            raise PrivacyError(f"macroRegimeMeter {field} vocabulary is non-canonical")
+
+    pillars = value.get("pillars")
+    if not isinstance(pillars, list) or len(pillars) != len(METER_PILLARS):
+        raise PrivacyError("macroRegimeMeter must contain exactly six pillars")
+    for item, (identifier, label, weight) in zip(pillars, METER_PILLARS):
+        if not isinstance(item, dict) or (item.get("id"), item.get("label"), item.get("weight")) != (identifier, label, weight):
+            raise PrivacyError("macroRegimeMeter pillar identity, label, or weight is non-canonical")
+        eligible = item.get("eligibility") is True
+        score = item.get("score")
+        if not isinstance(item.get("drivers"), list) or any(driver not in METER_DRIVERS for driver in item["drivers"]):
+            raise PrivacyError("macroRegimeMeter driver vocabulary is non-canonical")
+        if eligible:
+            if not isinstance(score, (int, float)) or isinstance(score, bool) or not math.isfinite(score) or not 1 <= score <= 10 or round(score, 1) != score:
+                raise PrivacyError("eligible macroRegimeMeter pillar score is invalid")
+            if item.get("direction") not in {"supportive", "mixed", "restrictive"} or item.get("freshnessStatus") != "current" or not isinstance(item.get("asOf"), str):
+                raise PrivacyError("eligible macroRegimeMeter pillar state is contradictory")
+            expected_confidence = "medium" if identifier == "trend_breadth" else "low"
+            if item.get("confidence") != expected_confidence:
+                raise PrivacyError("macroRegimeMeter proxy confidence is non-canonical")
+            expected_direction = "supportive" if score >= 6 else "restrictive" if score < 4.5 else "mixed"
+            if item.get("direction") != expected_direction or identifier not in METER_INPUTS or (item.get("drivers"), item.get("sourceIds")) != METER_INPUTS[identifier]:
+                raise PrivacyError("macroRegimeMeter pillar semantics are contradictory")
+            if item.get("reason") is not None:
+                raise PrivacyError("eligible macroRegimeMeter pillar cannot have an unavailable reason")
+        elif not (score is None and item.get("direction") == "unavailable" and item.get("confidence") == "unavailable"
+                  and item.get("freshnessStatus") == "unavailable" and item.get("asOf") is None
+                  and item.get("drivers") == [] and item.get("sourceIds") == []
+                  and item.get("reason") == METER_UNAVAILABLE_REASONS[identifier]):
+            raise PrivacyError("unavailable macroRegimeMeter pillar state is contradictory")
+
+    source_health = value.get("sourceHealth")
+    if not isinstance(source_health, dict):
+        raise PrivacyError("macroRegimeMeter source health is missing")
+    eligible_pillars = [item for item in pillars if item.get("eligibility") is True]
+    unavailable_ids = [item["id"] for item in pillars if item.get("eligibility") is not True]
+    eligible_weight = sum(item["weight"] for item in eligible_pillars)
+    if (source_health.get("eligibleWeight") != eligible_weight or source_health.get("minimumEligibleWeight") != 55
+            or source_health.get("totalWeight") != 100 or source_health.get("unavailablePillars") != unavailable_ids):
+        raise PrivacyError("macroRegimeMeter source-health totals are contradictory")
+    sources = source_health.get("sources")
+    if not isinstance(sources, list) or any(not isinstance(source, dict) or source.get("id") not in METER_SOURCE_IDS
+                                            or not isinstance(source.get("path"), str) for source in sources):
+        raise PrivacyError("macroRegimeMeter source vocabulary is invalid")
+    if source_health.get("reason") not in METER_HEALTH_REASONS or any(not re.fullmatch(METER_PATH_PATTERN, source["path"]) for source in sources):
+        raise PrivacyError("macroRegimeMeter provenance is unsafe")
+    resolved = [source["id"] for source in sources]
+    if len(resolved) != len(set(resolved)):
+        raise PrivacyError("macroRegimeMeter source IDs must be unique")
+    if any(source_id not in resolved for item in pillars for source_id in item.get("sourceIds", [])):
+        raise PrivacyError("macroRegimeMeter pillar source ID is unresolved")
+
+    if set(resolved) != {source for item in pillars for source in item["sourceIds"]}:
+        raise PrivacyError("macroRegimeMeter sources do not match eligible inputs")
+    for field, predicate in (("positiveDrivers", lambda score: score >= 6), ("negativeDrivers", lambda score: score < 4.5)):
+        if value[field] != [item["drivers"][0] for item in eligible_pillars if predicate(item["score"])][:3]:
+            raise PrivacyError("macroRegimeMeter aggregate drivers are contradictory")
+    score = value.get("score")
+    band = value.get("regimeBand")
+    if band not in METER_BAND_LABELS or value.get("regimeLabel") != METER_BAND_LABELS[band]:
+        raise PrivacyError("macroRegimeMeter band vocabulary is invalid")
+    if score is None:
+        if not (eligible_weight < 55 and band == "unavailable" and value.get("direction") == "unavailable"
+                and value.get("confidence") == "unavailable" and value.get("freshnessStatus") == "unavailable"
+                and source_health.get("status") == "fail_closed"):
+            raise PrivacyError("unavailable macroRegimeMeter state is contradictory")
+    else:
+        if (not isinstance(score, (int, float)) or isinstance(score, bool) or not math.isfinite(score) or not 1 <= score <= 10
+                or round(score, 1) != score or eligible_weight < 55 or band == "unavailable" or not isinstance(value.get("generatedAt"), str)
+                or value.get("confidence") not in {"low", "medium", "high"} or value.get("freshnessStatus") != "current"
+                or source_health.get("status") != "pass"):
+            raise PrivacyError("available macroRegimeMeter state is contradictory")
+        if score != round(sum(item["score"] * item["weight"] for item in eligible_pillars) / eligible_weight, 1):
+            raise PrivacyError("macroRegimeMeter weighted score is contradictory")
+        if value.get("confidence") != ("medium" if eligible_weight >= 70 else "low"):
+            raise PrivacyError("macroRegimeMeter confidence is contradictory")
+        eligible_dates = [item.get("asOf") for item in eligible_pillars]
+        if not eligible_dates or value.get("asOf") != min(eligible_dates):
+            raise PrivacyError("macroRegimeMeter asOf is not the oldest eligible observation")
+
+    for field in ("dailyChange", "weeklyChange"):
+        change = value.get(field)
+        if not isinstance(change, dict) or change.get("status") not in {"available", "unavailable"}:
+            raise PrivacyError(f"macroRegimeMeter {field} is invalid")
+        available = change.get("status") == "available"
+        if available != (isinstance(change.get("value"), (int, float)) and not isinstance(change.get("value"), bool)
+                         and math.isfinite(change["value"]) and isinstance(change.get("comparisonAsOf"), str)):
+            raise PrivacyError(f"macroRegimeMeter {field} availability is contradictory")
+        if not available and (change.get("value") is not None or change.get("comparisonAsOf") is not None):
+            raise PrivacyError(f"macroRegimeMeter {field} unavailable fields must be null")
+        if available and (score is None or not -9 <= change["value"] <= 9 or round(change["value"], 1) != change["value"] or not 1 - 1e-8 <= score - change["value"] <= 10 + 1e-8 or change["comparisonAsOf"] >= value["asOf"]):
+            raise PrivacyError("macroRegimeMeter comparison is impossible")
+    daily = value.get("dailyChange")
+    if score is not None and not _meter_band_possible(score, band, daily):
+        raise PrivacyError("macroRegimeMeter score and band are contradictory")
+    expected_direction = "unavailable" if daily.get("status") == "unavailable" else (
+        "steady" if abs(round(float(daily["value"]), 1)) < 0.2 else "improving" if daily["value"] > 0 else "deteriorating")
+    history = value.get("history")
+    if not isinstance(history, list) or len(history) > 40:
+        raise PrivacyError("macroRegimeMeter history bounds are invalid")
+    for row in history:
+        if (not isinstance(row, dict) or set(row) != {"asOf", "score", "regimeBand", "generatedAt", "methodologyVersion"}
+                or not isinstance(row.get("score"), (int, float)) or isinstance(row["score"], bool)
+                or not math.isfinite(row["score"]) or not 1 <= row["score"] <= 10 or round(row["score"], 1) != row["score"]
+                or row.get("methodologyVersion") != "macro-regime-meter-v1" or row.get("regimeBand") not in list(METER_BAND_LABELS)[:-1]
+                or not isinstance(row.get("asOf"), str) or not isinstance(row.get("generatedAt"), str)):
+            raise PrivacyError("macroRegimeMeter history observation is invalid")
+        bounds = [(1, 3.1), (2.8, 4.6), (4.3, 6.1), (5.8, 7.6), (7.3, 9.1), (8.8, 10)]
+        low, high = bounds[list(METER_BAND_LABELS).index(row["regimeBand"])]
+        if not low <= row["score"] <= high:
+            raise PrivacyError("macroRegimeMeter history score and band are contradictory")
+    if value.get("direction") != expected_direction:
+        raise PrivacyError("macroRegimeMeter direction contradicts daily comparison")
 
 
 def _normalize_known_public_paths(value: Any) -> Any:
@@ -347,6 +591,22 @@ SECTION_SPECS: dict[str, Any] = {
     "marketPosture": ("list", {"name": S, "sourcePath": S, "score": S, "zone": S, "delta": S,
                                 "artifactDate": S, "freshnessStatus": S, "plainTitle": S, "plainEnglish": S,
                                 "watch": SL, "history": ("list", {"date": S, "score": S, "zone": S, "sourcePath": S})}),
+    "macroRegimeMeter": {
+        "schemaVersion": S, "methodologyVersion": S, "generatedAt": S, "asOf": S, "score": S,
+        "regimeBand": S, "regimeLabel": S, "direction": S,
+        "dailyChange": {"status": S, "value": S, "comparisonAsOf": S},
+        "weeklyChange": {"status": S, "value": S, "comparisonAsOf": S},
+        "confidence": S, "freshnessStatus": S, "postureInterpretation": S,
+        "positiveDrivers": SL, "negativeDrivers": SL,
+        "pillars": ("list", {"id": S, "label": S, "score": S, "weight": S, "direction": S,
+                              "confidence": S, "freshnessStatus": S, "asOf": S, "drivers": SL,
+                              "sourceIds": SL, "eligibility": S, "reason": S}),
+        "sourceHealth": {"status": S, "eligibleWeight": S, "minimumEligibleWeight": S,
+                           "totalWeight": S, "unavailablePillars": SL,
+                           "sources": ("list", {"id": S, "path": S}), "reason": S},
+        "history": ("list", {"asOf": S, "score": S, "regimeBand": S, "generatedAt": S,
+                                "methodologyVersion": S}),
+    },
 
     "dailyJournal": ("list", {"date": S, "headline": S, "summary": S, "marketNarrative": {"title": S, "bullets": SL},
                                "portfolioActions": ("list", {"symbol": S, "stance": S, "text": S}), "keyTakeaways": SL,
@@ -430,7 +690,11 @@ def project_dto(value: Any, *, section: str) -> Any:
     """Project a section through its recursive allowlist; unknown claims are dropped."""
     if section not in SECTION_SPECS:
         raise PrivacyError(f"unknown public section: {section}")
+    if section == "macroRegimeMeter":
+        validate_macro_regime_meter_semantics(value)
     projected = _project_with_spec(value, SECTION_SPECS[section], section=section)
+    if section == "macroRegimeMeter" and projected != value:
+        raise PrivacyError("macroRegimeMeter must match its closed DTO without rewriting")
     if section == "currentAsymmetricShortlist" and isinstance(projected, dict):
         learning = projected.get("decisionLearning")
         if isinstance(learning, dict):
@@ -646,8 +910,17 @@ def build_public_snapshot(raw: dict[str, Any], *, data_as_of: str, cron_root: Pa
     # Keep private originals outside all public serialization paths.
     # Validate topology before generic prose cleaning can remove its identities.
     # Only already-public graphs receive this structural preparation.
-    prepared = {**raw, 'marketGraphs': [{**graph, 'privacy_class': 'public_ok'} for graph in _public_market_graphs(raw.get('marketGraphs'))]}
-    sections = _project_public_sections(sanitize_legacy(prepared, diagnostics=diagnostics))
+    meter = raw.get("macroRegimeMeter")
+    if meter is None or meter == {}:
+        meter = unavailable_macro_regime_meter("Canonical artifact was not supplied")
+    prepared = {**{key: value for key, value in raw.items() if key != 'macroRegimeMeter'},
+                'marketGraphs': [{**graph, 'privacy_class': 'public_ok'} for graph in _public_market_graphs(raw.get('marketGraphs'))]}
+    sanitized = sanitize_legacy(prepared, diagnostics=diagnostics)
+    # The numeric DTO is validated by project_dto and the final schema, never
+    # prose-cleaned. The legacy prose sanitizer would rewrite stable IDs
+    # such as ``risk_off`` and ``unavailable`` into display copy.
+    sanitized['macroRegimeMeter'] = meter
+    sections = _project_public_sections(sanitized)
     native_rows = raw.get('publications') or []
     if not isinstance(native_rows,list):
         diagnostics.append({'recordId':'unidentified','code':'records-not-array'})
@@ -778,7 +1051,10 @@ def represented_data_as_of(
 
     # Projection first ensures excluded/private/unknown source material cannot
     # contribute a freshness timestamp either.
-    visit(_project_public_sections(sanitize_legacy(raw)))
+    sanitized = sanitize_legacy({key: value for key, value in raw.items() if key != 'macroRegimeMeter'})
+    meter = raw.get("macroRegimeMeter")
+    sanitized["macroRegimeMeter"] = unavailable_macro_regime_meter("Canonical artifact was not supplied") if meter is None or meter == {} else meter
+    visit(_project_public_sections(sanitized))
     visit(merge_publications(raw.get("publications") or [], [], []))
     inventory_by_path = {entry.path: entry for entry in inventory}
     roots = tuple(root.resolve() for root in trusted_roots)

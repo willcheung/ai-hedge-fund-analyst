@@ -328,5 +328,164 @@
   "sourceHealth": {
     "status": "degraded",
     "sections": {}
+  },
+  "macroRegimeMeter": {
+    "asOf": "2000-01-19",
+    "confidence": "low",
+    "dailyChange": {
+      "comparisonAsOf": null,
+      "status": "unavailable",
+      "value": null
+    },
+    "direction": "unavailable",
+    "freshnessStatus": "current",
+    "generatedAt": "2000-01-20T00:00:00Z",
+    "history": [],
+    "methodologyVersion": "macro-regime-meter-v1",
+    "negativeDrivers": [],
+    "pillars": [
+      {
+        "asOf": "2000-01-19",
+        "confidence": "medium",
+        "direction": "mixed",
+        "drivers": [
+          "Breadth health plus RSP/SPY and IWM/SPY participation percentiles"
+        ],
+        "eligibility": true,
+        "freshnessStatus": "current",
+        "id": "trend_breadth",
+        "label": "Trend & breadth",
+        "reason": null,
+        "score": 5.5,
+        "sourceIds": [
+          "tradermonty.market_breadth",
+          "tradermonty.rsp_spy_proxy",
+          "tradermonty.iwm_spy_proxy"
+        ],
+        "weight": 25
+      },
+      {
+        "asOf": null,
+        "confidence": "unavailable",
+        "direction": "unavailable",
+        "drivers": [],
+        "eligibility": false,
+        "freshnessStatus": "unavailable",
+        "id": "liquidity_financial_conditions",
+        "label": "Liquidity & financial conditions",
+        "reason": "No robust current structured daily series",
+        "score": null,
+        "sourceIds": [],
+        "weight": 20
+      },
+      {
+        "asOf": "2000-01-19",
+        "confidence": "low",
+        "direction": "mixed",
+        "drivers": [
+          "HYG/LQD percentile proxy"
+        ],
+        "eligibility": true,
+        "freshnessStatus": "current",
+        "id": "credit",
+        "label": "Credit",
+        "reason": null,
+        "score": 5.5,
+        "sourceIds": [
+          "tradermonty.hyg_lqd_proxy"
+        ],
+        "weight": 15
+      },
+      {
+        "asOf": null,
+        "confidence": "unavailable",
+        "direction": "unavailable",
+        "drivers": [],
+        "eligibility": false,
+        "freshnessStatus": "unavailable",
+        "id": "growth_earnings",
+        "label": "Growth & earnings",
+        "reason": "No robust current structured daily series",
+        "score": null,
+        "sourceIds": [],
+        "weight": 15
+      },
+      {
+        "asOf": "2000-01-19",
+        "confidence": "low",
+        "direction": "mixed",
+        "drivers": [
+          "SHY/TLT percentile proxy, inverted because a rising ratio implies duration pressure"
+        ],
+        "eligibility": true,
+        "freshnessStatus": "current",
+        "id": "inflation_policy",
+        "label": "Inflation & policy",
+        "reason": null,
+        "score": 5.5,
+        "sourceIds": [
+          "tradermonty.shy_tlt_proxy"
+        ],
+        "weight": 15
+      },
+      {
+        "asOf": null,
+        "confidence": "unavailable",
+        "direction": "unavailable",
+        "drivers": [],
+        "eligibility": false,
+        "freshnessStatus": "unavailable",
+        "id": "volatility_positioning",
+        "label": "Volatility & positioning",
+        "reason": "Current structured VIX or sentiment history is unavailable",
+        "score": null,
+        "sourceIds": [],
+        "weight": 10
+      }
+    ],
+    "positiveDrivers": [],
+    "postureInterpretation": "Keep sizing selective; wait for broader confirmation before adding risk.",
+    "regimeBand": "neutral_mixed",
+    "regimeLabel": "Neutral / mixed",
+    "schemaVersion": 1,
+    "score": 5.5,
+    "sourceHealth": {
+      "eligibleWeight": 55,
+      "minimumEligibleWeight": 55,
+      "sources": [
+        {
+          "id": "tradermonty.market_breadth",
+          "path": "synthetic/inputs/market_breadth.json"
+        },
+        {
+          "id": "tradermonty.rsp_spy_proxy",
+          "path": "synthetic/inputs/rsp_spy_proxy.json"
+        },
+        {
+          "id": "tradermonty.iwm_spy_proxy",
+          "path": "synthetic/inputs/iwm_spy_proxy.json"
+        },
+        {
+          "id": "tradermonty.hyg_lqd_proxy",
+          "path": "synthetic/inputs/hyg_lqd_proxy.json"
+        },
+        {
+          "id": "tradermonty.shy_tlt_proxy",
+          "path": "synthetic/inputs/shy_tlt_proxy.json"
+        }
+      ],
+      "status": "pass",
+      "totalWeight": 100,
+      "unavailablePillars": [
+        "liquidity_financial_conditions",
+        "growth_earnings",
+        "volatility_positioning"
+      ]
+    },
+    "weeklyChange": {
+      "comparisonAsOf": null,
+      "status": "unavailable",
+      "value": null
+    }
   }
 }

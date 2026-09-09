@@ -269,20 +269,6 @@ li { margin: 8px 0; line-height: 1.52; }
 .tradingview-widget-copyright a, .tradingview-widget-copyright .blue-text { color: var(--accent); text-decoration: none; font-weight: 800; }
 .tradingview-widget-copyright a:hover { text-decoration: underline; }
 .stock-detail-chart { margin-top: calc(-1 * var(--space-2)); margin-bottom: var(--space-4); }
-.source-signal-panel { padding: var(--space-5); }
-.source-signal-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--space-3); }
-.source-signal-grid article { padding: 14px; border: 1px solid rgba(148,163,184,.13); border-radius: var(--radius-lg); background: rgba(2,6,23,.24); }
-.source-signal-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 8px; }
-.source-signal-head span, .source-signal-head em { border: 1px solid rgba(125,211,252,.20); border-radius: 999px; padding: 4px 8px; font-size: .7rem; font-weight: 850; color: #bae6fd; background: rgba(14,165,233,.09); font-style: normal; }
-.source-signal-head em { color: var(--success); background: var(--success-soft); border-color: rgba(34,197,94,.22); }
-.source-signal-grid h4 { margin: 6px 0 8px; color: var(--text-strong); line-height: 1.35; }
-.source-signal-grid p { color: #dbeafe; font-size: .92rem; line-height: 1.55; }
-.source-signal-grid small { color: #7b8ca7; display: block; margin-top: 10px; }
-.evidence-details { padding: var(--space-4); }
-.evidence-details > summary { cursor: pointer; color: var(--accent); font-weight: 950; letter-spacing: -.01em; }
-.evidence-details[open] > summary { margin-bottom: var(--space-3); }
-.evidence-details .market-brief-support { margin-top: var(--space-3); }
-.source-signal-panel.compact { padding: 0; }
 .membership-card { display: grid; gap: var(--space-4); padding: var(--space-5); border: 1px solid rgba(125,211,252,.22); border-radius: var(--radius-xl); background: linear-gradient(145deg, rgba(15,23,42,.92), rgba(9,22,39,.88)); box-shadow: var(--shadow); }
 .membership-title { margin-bottom: 0; }
 .membership-title h3, .membership-run-head h4, .membership-matrix-block h4 { margin: 5px 0 6px; color: var(--text-strong); letter-spacing: -.025em; }
@@ -416,11 +402,6 @@ li { margin: 8px 0; line-height: 1.52; }
 .ops-heal-list li { margin: 0; padding: 10px; border-radius: var(--radius-md); border: 1px solid rgba(34,197,94,.20); background: rgba(20,83,45,.11); }
 .ops-heal-list span { display: block; color: #dbeafe; margin-top: 4px; }
 .ops-path-list { display: grid; gap: 9px; }
-.market-brief-support { padding: var(--space-5); }
-.bridge-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin: 0 0 var(--space-4); }
-.bridge-grid article { border: 1px solid rgba(148,163,184,.13); border-radius: var(--radius-lg); padding: 13px; background: rgba(2,6,23,.22); }
-.bridge-grid strong { color: var(--text-strong); display: block; margin-bottom: 6px; }
-.bridge-grid p { margin: 0; color: var(--text-soft); font-size: .88rem; line-height: 1.48; }
 .brief-support-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, .95fr); gap: var(--space-4); align-items: start; }
 .brief-watch, .brief-takeaways { margin-bottom: var(--space-4); }
 .ticker-watch > p { color: var(--text-soft); margin: -2px 0 12px; line-height: 1.45; }
@@ -672,7 +653,7 @@ footer p { margin: 6px 0; }
   .hero, .dashboard-topbar, .journal-day header, .detail-header, .agentic-report-head, .strategy-hero, .ai-projection-hero, .cio-hero, .daily-brief-hero, .timeline-head, .tv-chart-head { flex-direction: column; align-items: stretch; }
   .topbar-pills { justify-content: flex-start; }
   .agentic-report-head > span { max-width: 100%; white-space: normal; }
-  .metrics, .posture-strip, .answer-strip, .detail-grid, .sources-grid, .action-callouts > div, .portfolio-actions > div, .agentic-report-grid, .strategy-metrics, .campaign-grid, .ai-chart-grid, .ai-universe-grid, .cio-metrics, .cio-grid, .source-signal-grid, .bridge-grid, .brief-support-grid, .convergence-grid, .daily-brief-metrics { grid-template-columns: 1fr; }
+  .metrics, .posture-strip, .answer-strip, .detail-grid, .sources-grid, .action-callouts > div, .portfolio-actions > div, .agentic-report-grid, .strategy-metrics, .campaign-grid, .ai-chart-grid, .ai-universe-grid, .cio-metrics, .cio-grid, .brief-support-grid, .convergence-grid, .daily-brief-metrics { grid-template-columns: 1fr; }
 
   .timeline-item { grid-template-columns: 1fr; }
   .canonical-regime-strip { grid-template-columns: 1fr; align-items: stretch; }

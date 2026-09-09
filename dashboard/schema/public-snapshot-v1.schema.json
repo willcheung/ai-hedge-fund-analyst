@@ -5215,6 +5215,9 @@
             },
             "topTags": {
               "$ref": "#/$defs/sourceHealthSection"
+            },
+            "macroRegimeMeter": {
+              "$ref": "#/$defs/sourceHealthSection"
             }
           },
           "required": [
@@ -5223,6 +5226,7 @@
             "topTags",
             "categoryCounts",
             "marketPosture",
+            "macroRegimeMeter",
             "dailyJournal",
             "cronTimeline",
             "intradayEquityWatchdog",
@@ -5661,6 +5665,1370 @@
         "$ref": "https://markets.example/schema/public-content-v1"
       },
       "maxItems": 2000
+    },
+    "macroRegimeMeter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "methodologyVersion": {
+          "const": "macro-regime-meter-v1"
+        },
+        "generatedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])$"
+        },
+        "asOf": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "score": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 10,
+          "multipleOf": 0.1
+        },
+        "regimeBand": {
+          "enum": [
+            "risk_off",
+            "defensive",
+            "neutral_mixed",
+            "selective_risk_on",
+            "constructive",
+            "broad_risk_on",
+            "unavailable"
+          ]
+        },
+        "regimeLabel": {
+          "enum": [
+            "Risk off",
+            "Defensive",
+            "Neutral / mixed",
+            "Selective risk on",
+            "Constructive",
+            "Broad risk on",
+            "Unavailable"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "improving",
+            "steady",
+            "deteriorating",
+            "unavailable"
+          ]
+        },
+        "dailyChange": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "enum": [
+                "available",
+                "unavailable"
+              ]
+            },
+            "value": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": -9,
+              "maximum": 9,
+              "multipleOf": 0.1
+            },
+            "comparisonAsOf": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date"
+            }
+          },
+          "required": [
+            "status",
+            "value",
+            "comparisonAsOf"
+          ],
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "available"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  },
+                  "comparisonAsOf": {
+                    "type": "string"
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "value": {
+                    "type": "null"
+                  },
+                  "comparisonAsOf": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "weeklyChange": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "enum": [
+                "available",
+                "unavailable"
+              ]
+            },
+            "value": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": -9,
+              "maximum": 9,
+              "multipleOf": 0.1
+            },
+            "comparisonAsOf": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date"
+            }
+          },
+          "required": [
+            "status",
+            "value",
+            "comparisonAsOf"
+          ],
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "available"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  },
+                  "comparisonAsOf": {
+                    "type": "string"
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "value": {
+                    "type": "null"
+                  },
+                  "comparisonAsOf": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low",
+            "unavailable"
+          ]
+        },
+        "freshnessStatus": {
+          "enum": [
+            "current",
+            "stale",
+            "unavailable"
+          ]
+        },
+        "postureInterpretation": {
+          "enum": [
+            "Preserve risk capacity; require unusually strong proof for new exposure.",
+            "Keep risk constrained and favor resilience while conditions remain fragile.",
+            "Keep sizing selective; wait for broader confirmation before adding risk.",
+            "Risk is permitted selectively, with confirmation and disciplined sizing.",
+            "Conditions support measured risk-taking while normal controls remain in place.",
+            "Broad risk participation is supported; retain normal concentration controls.",
+            "Insufficient current structured evidence to set macro risk permission."
+          ]
+        },
+        "positiveDrivers": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "Breadth health plus RSP/SPY and IWM/SPY participation percentiles",
+              "HYG/LQD percentile proxy",
+              "SHY/TLT percentile proxy, inverted because a rising ratio implies duration pressure"
+            ]
+          },
+          "maxItems": 3
+        },
+        "negativeDrivers": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "Breadth health plus RSP/SPY and IWM/SPY participation percentiles",
+              "HYG/LQD percentile proxy",
+              "SHY/TLT percentile proxy, inverted because a rising ratio implies duration pressure"
+            ]
+          },
+          "maxItems": 3
+        },
+        "pillars": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "enum": [
+                  "trend_breadth",
+                  "liquidity_financial_conditions",
+                  "credit",
+                  "growth_earnings",
+                  "inflation_policy",
+                  "volatility_positioning"
+                ]
+              },
+              "label": {
+                "enum": [
+                  "Trend & breadth",
+                  "Liquidity & financial conditions",
+                  "Credit",
+                  "Growth & earnings",
+                  "Inflation & policy",
+                  "Volatility & positioning"
+                ]
+              },
+              "score": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 1,
+                "maximum": 10,
+                "multipleOf": 0.1
+              },
+              "weight": {
+                "type": "integer",
+                "minimum": 10,
+                "maximum": 25
+              },
+              "direction": {
+                "enum": [
+                  "supportive",
+                  "mixed",
+                  "restrictive",
+                  "unavailable"
+                ]
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low",
+                  "unavailable"
+                ]
+              },
+              "freshnessStatus": {
+                "enum": [
+                  "current",
+                  "stale",
+                  "unavailable"
+                ]
+              },
+              "asOf": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date"
+              },
+              "drivers": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "Breadth health plus RSP/SPY and IWM/SPY participation percentiles",
+                    "HYG/LQD percentile proxy",
+                    "SHY/TLT percentile proxy, inverted because a rising ratio implies duration pressure"
+                  ]
+                },
+                "maxItems": 5
+              },
+              "sourceIds": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "tradermonty.market_breadth",
+                    "tradermonty.rsp_spy_proxy",
+                    "tradermonty.iwm_spy_proxy",
+                    "tradermonty.hyg_lqd_proxy",
+                    "tradermonty.shy_tlt_proxy"
+                  ]
+                },
+                "maxItems": 5,
+                "uniqueItems": true
+              },
+              "eligibility": {
+                "type": "boolean"
+              },
+              "reason": {
+                "enum": [
+                  null,
+                  "Current complete structured breadth inputs are unavailable",
+                  "No robust current structured daily series",
+                  "Current HYG/LQD proxy is unavailable",
+                  "Current SHY/TLT proxy is unavailable",
+                  "Current structured VIX or sentiment history is unavailable"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "score",
+              "weight",
+              "direction",
+              "confidence",
+              "freshnessStatus",
+              "asOf",
+              "drivers",
+              "sourceIds",
+              "eligibility",
+              "reason"
+            ],
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "eligibility": {
+                      "const": true
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "score": {
+                      "type": "number"
+                    },
+                    "direction": {
+                      "enum": [
+                        "supportive",
+                        "mixed",
+                        "restrictive"
+                      ]
+                    },
+                    "confidence": {
+                      "enum": [
+                        "medium",
+                        "low"
+                      ]
+                    },
+                    "freshnessStatus": {
+                      "const": "current"
+                    },
+                    "asOf": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "else": {
+                  "properties": {
+                    "score": {
+                      "type": "null"
+                    },
+                    "direction": {
+                      "const": "unavailable"
+                    },
+                    "confidence": {
+                      "const": "unavailable"
+                    },
+                    "freshnessStatus": {
+                      "const": "unavailable"
+                    },
+                    "asOf": {
+                      "type": "null"
+                    },
+                    "drivers": {
+                      "maxItems": 0
+                    },
+                    "sourceIds": {
+                      "maxItems": 0
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "direction": {
+                      "const": "restrictive"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "score": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 4.4
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "direction": {
+                      "const": "mixed"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "score": {
+                      "type": "number",
+                      "minimum": 4.5,
+                      "maximum": 5.9
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "direction": {
+                      "const": "supportive"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "score": {
+                      "type": "number",
+                      "minimum": 6,
+                      "maximum": 10
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "id": {
+                      "const": "trend_breadth"
+                    },
+                    "eligibility": {
+                      "const": true
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "drivers": {
+                      "const": [
+                        "Breadth health plus RSP/SPY and IWM/SPY participation percentiles"
+                      ]
+                    },
+                    "sourceIds": {
+                      "const": [
+                        "tradermonty.market_breadth",
+                        "tradermonty.rsp_spy_proxy",
+                        "tradermonty.iwm_spy_proxy"
+                      ]
+                    },
+                    "reason": {
+                      "const": null
+                    },
+                    "confidence": {
+                      "const": "medium"
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "id": {
+                      "const": "liquidity_financial_conditions"
+                    },
+                    "eligibility": {
+                      "const": true
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "eligibility": {
+                      "const": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "id": {
+                      "const": "credit"
+                    },
+                    "eligibility": {
+                      "const": true
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "drivers": {
+                      "const": [
+                        "HYG/LQD percentile proxy"
+                      ]
+                    },
+                    "sourceIds": {
+                      "const": [
+                        "tradermonty.hyg_lqd_proxy"
+                      ]
+                    },
+                    "reason": {
+                      "const": null
+                    },
+                    "confidence": {
+                      "const": "low"
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "id": {
+                      "const": "growth_earnings"
+                    },
+                    "eligibility": {
+                      "const": true
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "eligibility": {
+                      "const": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "id": {
+                      "const": "inflation_policy"
+                    },
+                    "eligibility": {
+                      "const": true
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "drivers": {
+                      "const": [
+                        "SHY/TLT percentile proxy, inverted because a rising ratio implies duration pressure"
+                      ]
+                    },
+                    "sourceIds": {
+                      "const": [
+                        "tradermonty.shy_tlt_proxy"
+                      ]
+                    },
+                    "reason": {
+                      "const": null
+                    },
+                    "confidence": {
+                      "const": "low"
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "id": {
+                      "const": "volatility_positioning"
+                    },
+                    "eligibility": {
+                      "const": true
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "eligibility": {
+                      "const": false
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "minItems": 6,
+          "maxItems": 6,
+          "allOf": [
+            {
+              "contains": {
+                "properties": {
+                  "id": {
+                    "const": "trend_breadth"
+                  },
+                  "label": {
+                    "const": "Trend & breadth"
+                  },
+                  "weight": {
+                    "const": 25
+                  }
+                },
+                "required": [
+                  "id",
+                  "label",
+                  "weight"
+                ]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "properties": {
+                  "id": {
+                    "const": "liquidity_financial_conditions"
+                  },
+                  "label": {
+                    "const": "Liquidity & financial conditions"
+                  },
+                  "weight": {
+                    "const": 20
+                  }
+                },
+                "required": [
+                  "id",
+                  "label",
+                  "weight"
+                ]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "properties": {
+                  "id": {
+                    "const": "credit"
+                  },
+                  "label": {
+                    "const": "Credit"
+                  },
+                  "weight": {
+                    "const": 15
+                  }
+                },
+                "required": [
+                  "id",
+                  "label",
+                  "weight"
+                ]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "properties": {
+                  "id": {
+                    "const": "growth_earnings"
+                  },
+                  "label": {
+                    "const": "Growth & earnings"
+                  },
+                  "weight": {
+                    "const": 15
+                  }
+                },
+                "required": [
+                  "id",
+                  "label",
+                  "weight"
+                ]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "properties": {
+                  "id": {
+                    "const": "inflation_policy"
+                  },
+                  "label": {
+                    "const": "Inflation & policy"
+                  },
+                  "weight": {
+                    "const": 15
+                  }
+                },
+                "required": [
+                  "id",
+                  "label",
+                  "weight"
+                ]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "properties": {
+                  "id": {
+                    "const": "volatility_positioning"
+                  },
+                  "label": {
+                    "const": "Volatility & positioning"
+                  },
+                  "weight": {
+                    "const": 10
+                  }
+                },
+                "required": [
+                  "id",
+                  "label",
+                  "weight"
+                ]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            }
+          ]
+        },
+        "sourceHealth": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "enum": [
+                "pass",
+                "fail_closed"
+              ]
+            },
+            "eligibleWeight": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "minimumEligibleWeight": {
+              "const": 55
+            },
+            "totalWeight": {
+              "const": 100
+            },
+            "unavailablePillars": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "trend_breadth",
+                  "liquidity_financial_conditions",
+                  "credit",
+                  "growth_earnings",
+                  "inflation_policy",
+                  "volatility_positioning"
+                ]
+              },
+              "maxItems": 6,
+              "uniqueItems": true
+            },
+            "sources": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "enum": [
+                      "tradermonty.market_breadth",
+                      "tradermonty.rsp_spy_proxy",
+                      "tradermonty.iwm_spy_proxy",
+                      "tradermonty.hyg_lqd_proxy",
+                      "tradermonty.shy_tlt_proxy"
+                    ]
+                  },
+                  "path": {
+                    "type": "string",
+                    "pattern": "^(?![\\s\\S]*[\\x00-\\x20\\x7f])(?!.*[Pp][Rr][Ii][Vv][Aa][Tt][Ee])(?!.*[Aa][Cc][Cc][Oo][Uu][Nn][Tt])(?!.*[Pp][Oo][Rr][Tt][Ff][Oo][Ll][Ii][Oo])(?!.*[Pp][Nn][Ll])(?!.*[Rr][Oo][Bb][Ii][Nn][Hh][Oo][Oo][Dd])(?!.*[Cc][Oo][Ss][Tt][_-]?[Bb][Aa][Ss][Ii][Ss])(?!.*[Dd][Rr][Yy][_-]?[Pp][Oo][Ww][Dd][Ee][Rr])(?!.*[Gg][Oo][Aa][Ll][_-]?[Gg][Aa][Pp])(?!.*\\.\\.)[A-Za-z0-9_-]+(?:[.][A-Za-z0-9_-]+)*(?:/[A-Za-z0-9_-]+(?:[.][A-Za-z0-9_-]+)*)*$"
+                  }
+                },
+                "required": [
+                  "id",
+                  "path"
+                ]
+              },
+              "maxItems": 10
+            },
+            "reason": {
+              "enum": [
+                "Canonical artifact failed its closed contract",
+                "Canonical artifact failed its semantic privacy and vocabulary contract",
+                "Canonical artifact is missing or unreadable",
+                "Canonical artifact is not an object",
+                "Canonical artifact was not supplied",
+                "missing",
+                null
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "eligibleWeight",
+            "minimumEligibleWeight",
+            "totalWeight",
+            "unavailablePillars",
+            "sources"
+          ]
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "asOf": {
+                "type": "string",
+                "format": "date"
+              },
+              "score": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 10,
+                "multipleOf": 0.1
+              },
+              "regimeBand": {
+                "enum": [
+                  "risk_off",
+                  "defensive",
+                  "neutral_mixed",
+                  "selective_risk_on",
+                  "constructive",
+                  "broad_risk_on"
+                ]
+              },
+              "generatedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])$"
+              },
+              "methodologyVersion": {
+                "const": "macro-regime-meter-v1"
+              }
+            },
+            "required": [
+              "asOf",
+              "score",
+              "regimeBand",
+              "generatedAt",
+              "methodologyVersion"
+            ],
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "regimeBand": {
+                      "const": "risk_off"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "score": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 3.1
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "regimeBand": {
+                      "const": "defensive"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "score": {
+                      "type": "number",
+                      "minimum": 2.8,
+                      "maximum": 4.6
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "regimeBand": {
+                      "const": "neutral_mixed"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "score": {
+                      "type": "number",
+                      "minimum": 4.3,
+                      "maximum": 6.1
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "regimeBand": {
+                      "const": "selective_risk_on"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "score": {
+                      "type": "number",
+                      "minimum": 5.8,
+                      "maximum": 7.6
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "regimeBand": {
+                      "const": "constructive"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "score": {
+                      "type": "number",
+                      "minimum": 7.3,
+                      "maximum": 9.1
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "regimeBand": {
+                      "const": "broad_risk_on"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "score": {
+                      "type": "number",
+                      "minimum": 8.8,
+                      "maximum": 10
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "maxItems": 40
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "methodologyVersion",
+        "generatedAt",
+        "asOf",
+        "score",
+        "regimeBand",
+        "regimeLabel",
+        "direction",
+        "dailyChange",
+        "weeklyChange",
+        "confidence",
+        "freshnessStatus",
+        "postureInterpretation",
+        "positiveDrivers",
+        "negativeDrivers",
+        "pillars",
+        "sourceHealth",
+        "history"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "score": {
+                "type": "null"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "regimeBand": {
+                "const": "unavailable"
+              },
+              "regimeLabel": {
+                "const": "Unavailable"
+              },
+              "direction": {
+                "const": "unavailable"
+              },
+              "confidence": {
+                "const": "unavailable"
+              },
+              "freshnessStatus": {
+                "const": "unavailable"
+              },
+              "sourceHealth": {
+                "properties": {
+                  "status": {
+                    "const": "fail_closed"
+                  },
+                  "eligibleWeight": {
+                    "maximum": 54
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "generatedAt": {
+                "type": "string"
+              },
+              "asOf": {
+                "type": "string"
+              },
+              "regimeBand": {
+                "enum": [
+                  "risk_off",
+                  "defensive",
+                  "neutral_mixed",
+                  "selective_risk_on",
+                  "constructive",
+                  "broad_risk_on"
+                ]
+              },
+              "regimeLabel": {
+                "enum": [
+                  "Risk off",
+                  "Defensive",
+                  "Neutral / mixed",
+                  "Selective risk on",
+                  "Constructive",
+                  "Broad risk on"
+                ]
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "freshnessStatus": {
+                "const": "current"
+              },
+              "sourceHealth": {
+                "properties": {
+                  "status": {
+                    "const": "pass"
+                  },
+                  "eligibleWeight": {
+                    "minimum": 55
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "regimeBand": {
+                "const": "risk_off"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "regimeLabel": {
+                "const": "Risk off"
+              },
+              "postureInterpretation": {
+                "const": "Preserve risk capacity; require unusually strong proof for new exposure."
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "regimeBand": {
+                "const": "defensive"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "regimeLabel": {
+                "const": "Defensive"
+              },
+              "postureInterpretation": {
+                "const": "Keep risk constrained and favor resilience while conditions remain fragile."
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "regimeBand": {
+                "const": "neutral_mixed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "regimeLabel": {
+                "const": "Neutral / mixed"
+              },
+              "postureInterpretation": {
+                "const": "Keep sizing selective; wait for broader confirmation before adding risk."
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "regimeBand": {
+                "const": "selective_risk_on"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "regimeLabel": {
+                "const": "Selective risk on"
+              },
+              "postureInterpretation": {
+                "const": "Risk is permitted selectively, with confirmation and disciplined sizing."
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "regimeBand": {
+                "const": "constructive"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "regimeLabel": {
+                "const": "Constructive"
+              },
+              "postureInterpretation": {
+                "const": "Conditions support measured risk-taking while normal controls remain in place."
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "regimeBand": {
+                "const": "broad_risk_on"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "regimeLabel": {
+                "const": "Broad risk on"
+              },
+              "postureInterpretation": {
+                "const": "Broad risk participation is supported; retain normal concentration controls."
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "regimeBand": {
+                "const": "unavailable"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "regimeLabel": {
+                "const": "Unavailable"
+              },
+              "postureInterpretation": {
+                "const": "Insufficient current structured evidence to set macro risk permission."
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "regimeBand": {
+                "const": "risk_off"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "score": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 3.1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "regimeBand": {
+                "const": "defensive"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "score": {
+                "type": "number",
+                "minimum": 2.8,
+                "maximum": 4.6
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "regimeBand": {
+                "const": "neutral_mixed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "score": {
+                "type": "number",
+                "minimum": 4.3,
+                "maximum": 6.1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "regimeBand": {
+                "const": "selective_risk_on"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "score": {
+                "type": "number",
+                "minimum": 5.8,
+                "maximum": 7.6
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "regimeBand": {
+                "const": "constructive"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "score": {
+                "type": "number",
+                "minimum": 7.3,
+                "maximum": 9.1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "regimeBand": {
+                "const": "broad_risk_on"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "score": {
+                "type": "number",
+                "minimum": 8.8,
+                "maximum": 10
+              }
+            }
+          }
+        }
+      ]
     }
   },
   "required": [
@@ -5684,7 +7052,8 @@
     "focusTickers",
     "sourceHealth",
     "privacy",
-    "publications"
+    "publications",
+    "macroRegimeMeter"
   ],
   "title": "MarketWiki Public Snapshot v1",
   "type": "object"

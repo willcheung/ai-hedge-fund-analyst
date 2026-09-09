@@ -64,3 +64,46 @@ research is embedded in the helper.
 Job identities in demonstration helpers use `synthetic-job-*` tokens. Private
 installations must supply their own reviewed job mappings; these tokens identify
 fixtures and are not deployment identities.
+# Meter and consumer builds
+
+Daily Brief includes a six-band macro meter, Eastern publication times, complete
+macro and weekly commentary, and shared theme styling. Meter scores are supplied
+by the publication contract; the browser only positions and labels them. Missing
+scores remain unavailable. The optional offline generator accepts `--macro-meter`
+with an explicit JSON artifact and validates it without rewriting its numeric DTO.
+
+The demo meter is fictional: 5.5, dated January 2000, with synthetic input paths.
+The shared meter observation fixtures contain synthetic boundary and invalid
+cases, not recorded market observations. Contract source identifiers are stable
+public vocabulary; they do not refer to installed jobs. Timeline mappings cover
+only synthetic demo producers; other publishers supply their category metadata.
+
+`npm run build` remains the synthetic offline build. `npm run build:live` builds
+the manifest consumer into `dist/live`, requires explicit
+`VITE_MARKETS_MANIFEST_URL` and `VITE_MARKETS_BLOB_ORIGIN`, and copies only the
+reviewed icons and fonts. It includes no bundled JSON dataset. Remote failures
+use the existing validated cache behavior, or show unavailable data when no
+cached edition exists. Neither build publishes anything.
+
+Use a fresh disposable source copy at `/tmp/analyst-ci` and the tool versions in
+the staging workflow. Dependency acquisition is separate setup (no lifecycle
+scripts); run these from that copy after installing Bubblewrap:
+
+```sh
+python3 -m venv .venv
+python3 -m pip download --index-url https://pypi.org/simple --only-binary=:all: --require-hashes -r dashboard/requirements.txt -d .wheelhouse
+env -i PATH="$PATH" HOME=/tmp/analyst-install-home npm ci --ignore-scripts --prefix dashboard
+env -i PATH="/tmp/analyst-ci/.venv/bin:$PATH" STAGING_ROOT=/tmp/analyst-ci bash tools/staging/offline.sh python -m pip install --no-index --find-links .wheelhouse --require-hashes -r dashboard/requirements.txt
+```
+
+Then, from `/tmp/analyst-ci/dashboard`, run application validation only through
+the unchanged isolation entry point:
+
+```sh
+env -i PATH="/tmp/analyst-ci/.venv/bin:$PATH" STAGING_ROOT=/tmp/analyst-ci bash ../tools/staging/offline.sh bash -c 'python scripts/validate_demo_privacy.py --source-only && npm test && npm run build && npm run validate:public && npm run validate:privacy'
+env -i PATH="/tmp/analyst-ci/.venv/bin:$PATH" STAGING_ROOT=/tmp/analyst-ci bash ../tools/staging/offline.sh bash -c 'VITE_MARKETS_MANIFEST_URL=https://example.com/manifest.json VITE_MARKETS_BLOB_ORIGIN=https://example.com npm run build:live && python scripts/validate_public_assets.py dist/live'
+```
+
+The second command uses inert example endpoints to verify the consumer build;
+it does not fetch a manifest. Namespace failures block application validation
+and must be handled by running the same entry point on a compatible host.

@@ -308,6 +308,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 /* Restored research views share surfaces and readable text in both themes. */
 .markets-app :is(.daily-brief-hero,.timeline-card,.tv-chart-card,.tv-widget-frame,.chart-js-frame,.datatable-shell,.ai-chart-grid article,.proof-methodology,.proof-boundaries section,.proof-ladder li) { background: var(--markets-surface); border-color: var(--markets-border); box-shadow: none; }
+.markets-app .markdown-output :is(h3, h4, h5) { color: var(--markets-foreground); }
 .markets-app :is(.timeline-card,.empty,.markdown-output p,.md-list li,.md-action-details li,.strategy-table td,.datatable-shell .dt-container,.proof-ladder span,.chart-outlier-note span) { color: var(--markets-foreground); }
 .markets-app :is(.markdown-output code,.tv-chart-head > span,.ai-category-pill,.chart-category-key span,.ai-category-legend span,.proof-ladder b) { color: var(--markets-primary); background: var(--markets-selected); border-color: var(--markets-border); }
 .markets-app .strategy-table th { color: var(--markets-foreground); background: var(--markets-hover); }
@@ -346,23 +347,46 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .markets-evaluation .strategy-table th .dt-column-order { flex-shrink: 0; }
 .markets-evaluation .strategy-table th:nth-child(4) { min-width: 64px; }
 /* One bucket column, with explanations beside it instead of empty matrix columns. */
-.markets-cio .membership-layout { display: grid; grid-template-columns: minmax(0,1fr) 280px; gap: 24px; align-items: start; }
+.markets-cio .membership-methodology { box-sizing: border-box; width: 100%; min-width: 0; padding: 16px 18px; border: 1px solid var(--markets-border); border-left: 3px solid var(--markets-primary); border-radius: var(--markets-radius); background: var(--markets-selected); overflow-wrap: anywhere; }
+.markets-cio .membership-methodology h3 { margin: 0 0 10px; }
+.markets-cio .membership-methodology p { margin: 0; color: var(--markets-muted); font-size: .875rem; line-height: 1.6; }
+.markets-cio .membership-methodology p + p { margin-top: 8px; }
+.markets-cio .membership-layout, .markets-cio .membership-layout > .table-scroll { width: 100%; min-width: 0; }
 .markets-cio .membership-list { width: 100%; min-width: 540px; border-collapse: collapse; font-size: .75rem; }
 .markets-cio .membership-list :is(th,td) { text-align: left; vertical-align: top; padding: 10px 12px; }
 .markets-cio .membership-list th { white-space: nowrap; font-size: .6875rem; }
 .markets-cio .membership-list td:nth-child(2) { min-width: 150px; }
 .markets-cio .membership-list .membership-reason { min-width: 200px; line-height: 1.5; }
-.markets-cio .membership-guide { padding: 16px; background: var(--markets-hover); border: 1px solid var(--markets-border); border-radius: var(--markets-radius); font-size: .8125rem; }
-.markets-cio .membership-guide h4 { margin: 0 0 12px; }
-.markets-cio .membership-guide dl { margin: 0; }
-.markets-cio .membership-guide dd { margin: 5px 0 16px; color: var(--markets-muted); line-height: 1.5; }
 .markets-cio .membership-bucket-label { font-weight: 600; }
 .markets-cio .membership-bucket-label.success { color: var(--markets-positive); }
 .markets-cio .membership-bucket-label.warning { color: var(--markets-caution); }
 .markets-cio .membership-bucket-label.urgent { color: var(--markets-negative); }
 .markets-cio .membership-bucket-label.neutral { color: var(--markets-muted); }
-.markets-cio summary { cursor: pointer; font-weight: 600; }
-@media(max-width:900px) { .markets-cio .membership-layout { grid-template-columns: minmax(0,1fr); } }
+@media(max-width:540px) {
+  .markets-cio .membership-methodology { max-width: 100%; padding: 14px; }
+  .markets-cio .membership-layout > .table-scroll { overflow-x: visible; }
+  .markets-cio .membership-list { min-width: 0; border-collapse: separate; border-spacing: 0 12px; }
+  .markets-cio .membership-list thead { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .markets-cio .membership-list :is(tbody,tr) { display: block; width: 100%; }
+  .markets-cio .membership-list tr { box-sizing: border-box; padding: 4px 12px; border: 1px solid var(--markets-border); border-radius: var(--markets-radius); background: var(--markets-surface); }
+  .markets-cio .membership-list td { display: grid; grid-template-columns: minmax(7rem,35%) minmax(0,1fr); gap: 12px; min-width: 0; padding: 8px 0; border: 0; overflow-wrap: anywhere; }
+  .markets-cio .membership-list td + td { border-top: 1px solid var(--markets-border); }
+  .markets-cio .membership-list td::before { content: attr(data-label); color: var(--markets-muted); font-size: .6875rem; font-weight: 600; line-height: 1.5; }
+  .markets-cio .membership-list td:nth-child(2), .markets-cio .membership-list .membership-reason { min-width: 0; }
+}
+
+/* Latest journal context uses only the public theme tokens in either appearance. */
+.markets-daily .latest-market-context { color: var(--markets-foreground); }
+.markets-daily .latest-market-context .markets-section-header { align-items: flex-start; }
+.markets-daily .latest-market-context .brief-support-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; align-items: start; }
+.markets-daily .latest-market-context :is(.market-story,.portfolio-actions,.ticker-watch,.takeaways) { color: var(--markets-foreground); background: var(--markets-surface); border-color: var(--markets-border); box-shadow: none; }
+.markets-daily .latest-market-context :is(.market-story li,.takeaways li,.portfolio-actions article) { color: var(--markets-foreground); background: var(--markets-hover); border-color: var(--markets-border); }
+.markets-daily .latest-market-context :is(.market-story h3,.portfolio-actions h3,.portfolio-actions strong,.ticker-watch h3,.takeaways h3) { color: var(--markets-foreground); }
+.markets-daily .latest-market-context :is(.portfolio-actions p,.portfolio-stance,.ticker-watch > p) { color: var(--markets-muted); }
+.markets-daily .latest-market-context .ticker-watch button { color: var(--markets-foreground); background: var(--markets-hover); border-color: var(--markets-border-strong); }
+.markets-daily .latest-market-context .ticker-watch button:disabled { color: var(--markets-muted); background: var(--markets-hover); border-color: var(--markets-border); }
+.markets-daily .latest-market-context .move-pct.flat { color: var(--markets-muted); background: var(--markets-surface); border-color: var(--markets-border); }
+@media(max-width:700px) { .markets-daily .latest-market-context .brief-support-grid { grid-template-columns: minmax(0,1fr); } }
 
 /* Category quick view uses source categories, never free-form workflow tags. */
 .markets-category-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-block: 8px 16px; }
@@ -398,4 +422,16 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 @media (forced-colors: active) {
   :focus-visible { outline-color: Highlight; }
   .markets-nav a[aria-current='page'] { border-bottom-color: Highlight; }
+}
+
+/* Shared meter palette; its geometry lives in macroRegimeMeter.css. */
+:root {
+  --macro-meter-zone-1: #a63545;
+  --macro-meter-zone-2: #bd7142;
+  --macro-meter-zone-3: #ab963c;
+  --macro-meter-zone-4: #6e9870;
+  --macro-meter-zone-5: #387962;
+  --macro-meter-zone-6: #195d4c;
+  --macro-meter-halo: #fff;
+  --macro-meter-pointer: #111;
 }

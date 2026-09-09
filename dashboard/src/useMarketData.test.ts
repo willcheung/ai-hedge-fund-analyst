@@ -52,6 +52,27 @@ async function settle() {
 afterEach(() => vi.restoreAllMocks())
 
 describe('market data runtime', () => {
+  it.each(['missing', 'corrupt'])('live mode never loads a leftover bundle with a %s cache, including remote failure and recovery', async cache => {
+    const remote = vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(load('live', 'remote'))
+    const h = harness({
+      bundledOnly: false,
+      loadLastKnownGoodFn: vi.fn(async () => {
+        if (cache === 'corrupt') throw new Error('corrupt')
+        return null
+      }),
+      loadRemoteFn: remote,
+    })
+    await settle()
+    expect(h.getState().data).toBeNull()
+    expect(h.getState().error).toBe('offline')
+    expect(h.options.loadBundledFn).not.toHaveBeenCalled()
+    await h.runtime.refresh()
+    expect(h.getState().data).toEqual({ value: 'live' })
+    expect(h.getState().error).toBeUndefined()
+    expect(h.options.loadBundledFn).not.toHaveBeenCalled()
+    h.runtime.dispose()
+  })
+
   it('explicit staged mode bypasses remote manifests and cached live data on load and refresh', async () => {
     const remote = vi.fn(async () => { throw new Error('No manifest on static preview') })
     const cached = vi.fn(async () => load('live cached data', 'last-known-good'))
@@ -79,6 +100,7 @@ describe('market data runtime', () => {
     const calls: string[] = []
     const pendingRemote = deferred<MarketDataLoad<Data> | null>()
     const h = harness({
+      bundledOnly: false,
       loadLastKnownGoodFn: vi.fn(async () => { calls.push('lkg'); return { ...load('cached', 'last-known-good'), manifest } }),
       loadBundledFn: vi.fn(async () => { calls.push('bundle'); return load('bundle', 'bundled') }),
       loadRemoteFn: vi.fn(async () => { calls.push('remote'); return pendingRemote.promise }),
@@ -156,6 +178,8 @@ describe('market data runtime', () => {
     const h = harness({ loadRemoteFn: remote, setTimeoutFn, clearTimeoutFn })
     await settle()
     expect(delays).toEqual([MARKET_DATA_POLL_MS * 2])
+    expect(h.getState().data).toEqual({ value: 'bundle' })
+    expect(h.getState().error).toBe('offline')
     await h.runtime.refresh()
     expect(h.getState().data).toEqual({ value: 'recovered' })
     expect(h.getState().error).toBeUndefined()
