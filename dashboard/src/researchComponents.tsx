@@ -1,8 +1,10 @@
 import React, { type ReactNode } from 'react';
+import {FinancialChange, financialParts, changeDirection, type Direction} from './financialChange';
+export type {Direction} from './financialChange';
 
 /** Percent inputs are percentage points (1.93 means 1.93%), not fractions. */
 export type FinancialValue = number | null | undefined;
-export type Direction = 'positive' | 'negative' | 'neutral';
+
 const finite = (value: FinancialValue): value is number => typeof value === 'number' && Number.isFinite(value);
 const digits = (precision: number) => Number.isFinite(precision) ? Math.min(8, Math.max(0, Math.trunc(precision))) : 2;
 const cleanZero = (value: number, precision: number) => Number(value.toFixed(digits(precision))) === 0 ? 0 : value;
@@ -30,7 +32,7 @@ export function formatPercentChange(value: FinancialValue, precision = 2): strin
 export function financialDirection(value: FinancialValue, precision = 2): Direction {
   if (!finite(value)) return 'neutral';
   const normalized = cleanZero(value, precision);
-  return normalized > 0 ? 'positive' : normalized < 0 ? 'negative' : 'neutral';
+  return changeDirection(normalized);
 }
 
 /** Only an explicit timezone-bearing timestamp can establish a quote instant. */
@@ -109,8 +111,8 @@ export function Quote({ quote, precision = 2, trusted = false }: QuoteProps) {
   return <div className="quote">
     <span className="quote-price financial-value">{formatPrice(quote.price, quote.currency, precision)}</span>
     {compatible && signsAgree && (finite(change?.absolute) || finite(change?.percent)) ? <span className="quote-daily-change">{' '}
-      {finite(change?.absolute) && <span className="quote-change financial-value" data-direction={financialDirection(change.absolute, precision)}>{formatChange(change.absolute, quote.currency, precision)}</span>}
-      {finite(change?.percent) && <span className="quote-change financial-value" data-direction={financialDirection(change.percent)}>{finite(change?.absolute) ? ' (' : ''}{formatPercentChange(change.percent)}{finite(change?.absolute) ? ')' : ''}</span>}
+      {finite(change?.absolute) && <span className="quote-change financial-change financial-value" data-direction={financialDirection(change.absolute, precision)}>{formatChange(change.absolute, quote.currency, precision)}</span>}
+      {finite(change?.percent) && <span className="quote-change financial-change financial-value" data-direction={financialDirection(change.percent)}>{finite(change?.absolute) ? ' (' : ''}{formatPercentChange(change.percent)}{finite(change?.absolute) ? ')' : ''}</span>}
       <span className="quote-period"> daily change</span>
     </span> : <span className="quote-change-unavailable"> Daily change unavailable</span>}
     <div className="quote-timestamp">{quote.stale ? 'Stale quote · ' : stamp !== null && Date.now() - stamp > 72 * 3600 * 1000 ? 'Earlier quote snapshot · ' : ''}{stamp !== null ? <>As of <time dateTime={quote.asOf!}>{formatTimestamp(quote.asOf)}</time></> : 'Timestamp unavailable'}</div>
@@ -179,6 +181,8 @@ function protectedAt(text: string, start: number): ProtectedPart | null {
     return { end: text.length, kind: 'literal' };
   }
   if (rest[0] === '[' || rest.startsWith('![')) {
+    const wiki = /^\[\[[^\]\n]+\]\]/.exec(rest);
+    if (wiki) return { end: start + wiki[0].length, kind: 'literal' };
     const link = markdownLink(text, start);
     if (link) return { end: link.end, kind: 'link', link };
     // Reference syntax is retained literally rather than guessed or relinked.
@@ -192,7 +196,7 @@ function protectedAt(text: string, start: number): ProtectedPart | null {
   // URL/email matching only starts at a token boundary; long plain words must
   // not trigger a quadratic suffix scan at every character.
   if (start > 0 && /[A-Za-z0-9._%+@-]/.test(text[start - 1])) return null;
-  const literal = /^(?:(?:[a-z][a-z0-9+.-]*:\/\/|www\.)[^\s<>]+|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/i.exec(rest);
+  const literal = /^(?:(?:[a-z][a-z0-9+.-]*:\/\/|www\.)[^\s<>]+|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|(?:\/?[\w.-]+\/)+[\w./-]+|[\w.-]+\.(?:md|json|csv|yaml|yml|txt)\b)/i.exec(rest);
   return literal ? { end: start + literal[0].length, kind: 'literal' } : null;
 }
 function parsePlainTickers(text: string, index: Map<string, KnownSymbol>): TickerToken[] {
@@ -228,14 +232,56 @@ export function parseTickerMentions(text: string, knownSymbols: KnownSymbols = [
   result.push(...parsePlainTickers(text.slice(start), index));
   return result;
 }
+// Classify the complete visible inline text before emphasis or ticker linking.
+// Protected content blocks movement context; negation may cross its placeholder.
+function inlineDirections(text: string): (Direction | undefined)[] {
+  let visible = '';
+  const offsets: number[] = [];
+  const project = (start: number, limit: number, depth = 0) => {
+    for (let i = start; i < limit;) {
+      const protectedPart = protectedAt(text, i);
+      if (protectedPart) { visible += '\uFFFC'; offsets.push(-1); i = Math.min(limit, protectedPart.end); continue; }
+      if (text[i] === '\\' && /[\\`*_[\]{}()#+.!>|~-]/.test(text[i + 1] || '')) {
+        visible += '\uFFFC'; offsets.push(-1); i += 2; continue;
+      }
+      const delimiter = text.startsWith('**', i) ? '**' : text.startsWith('__', i) ? '__' : /[*_]/.test(text[i]) ? text[i] : null;
+      if (delimiter && depth <= 12) {
+        const end = text.indexOf(delimiter, i + delimiter.length);
+        if (end > i + delimiter.length && end < limit) {
+          project(i + delimiter.length, end, depth + 1);
+          i = end + delimiter.length; continue;
+        }
+      }
+      visible += text[i]; offsets.push(i++);
+    }
+  };
+  project(0, text.length);
+  const directions: (Direction | undefined)[] = Array(text.length);
+  let cursor = 0;
+  for (const part of financialParts(visible)) {
+    for (let i = cursor; i < cursor + part.text.length; i++) if (offsets[i] >= 0) directions[offsets[i]] = part.direction;
+    cursor += part.text.length;
+  }
+  return directions;
+}
 function tickerNodes(text: string, known: KnownSymbols): ReactNode[] {
   return parseTickerMentions(text, known).map((token, key) => token.type === 'text' ? token.text : <Ticker key={key} symbol={token.symbol} href={token.href} dollarPrefix={token.text.startsWith('$')} />);
 }
-function inline(text: string, known: KnownSymbols, allowLinks = true, depth = 0): ReactNode[] {
+function inline(text: string, known: KnownSymbols, allowLinks = true, depth = 0, directions = inlineDirections(text)): ReactNode[] {
   if (depth > 12) return [text];
   const nodes: ReactNode[] = [];
   let cursor = 0, start = 0;
-  const flush = () => { if (cursor > start) nodes.push(...(allowLinks ? tickerNodes(text.slice(start, cursor), known) : [text.slice(start, cursor)])); };
+  const flush = () => {
+    let from = start;
+    while (from < cursor) {
+      const direction = allowLinks ? directions[from] : undefined;
+      let end = from + 1;
+      while (end < cursor && (!allowLinks || directions[end] === direction)) end++;
+      const children = allowLinks ? tickerNodes(text.slice(from, end), known) : [text.slice(from, end)];
+      nodes.push(direction ? <FinancialChange key={nodes.length} direction={direction}>{children}</FinancialChange> : <React.Fragment key={nodes.length}>{children}</React.Fragment>);
+      from = end;
+    }
+  };
   while (cursor < text.length) {
     if (text[cursor] === '\\' && /[\\`*_[\]{}()#+.!>|~-]/.test(text[cursor + 1] || '')) {
       flush(); nodes.push(text[cursor + 1]); cursor += 2; start = cursor; continue;
@@ -256,7 +302,7 @@ function inline(text: string, known: KnownSymbols, allowLinks = true, depth = 0)
     if (delimiter) {
       const end = text.indexOf(delimiter, cursor + delimiter.length);
       if (end > cursor + delimiter.length) {
-        flush(); const body = inline(text.slice(cursor + delimiter.length, end), known, allowLinks, depth + 1);
+        flush(); const body = inline(text.slice(cursor + delimiter.length, end), known, allowLinks, depth + 1, directions.slice(cursor + delimiter.length, end));
         nodes.push(delimiter.length === 2 ? <strong key={nodes.length}>{body}</strong> : <em key={nodes.length}>{body}</em>);
         cursor = end + delimiter.length; start = cursor; continue;
       }

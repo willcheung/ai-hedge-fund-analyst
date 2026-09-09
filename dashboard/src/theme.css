@@ -230,9 +230,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 /* Actual shared component DOM: one semantic token system across every publisher. */
 .markets-app .financial-value { font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
 .markets-app .quote-price { color: var(--markets-foreground); font-weight: 600; }
-.markets-app .quote-change[data-direction='positive'] { color: var(--markets-positive); }
-.markets-app .quote-change[data-direction='negative'] { color: var(--markets-negative); }
-.markets-app .quote-change[data-direction='neutral'] { color: var(--markets-neutral); }
 .markets-app :is(.quote-timestamp,.quote-period,.quote-unavailable,.quote-change-unavailable,.thesis-update-date) { color: var(--markets-muted); font-size: .8125rem; }
 .markets-app .ticker { color: var(--markets-ticker); font-family: var(--markets-font-body); font-weight: 700; white-space: nowrap; text-decoration: none; }
 .markets-app a.ticker:hover { background: var(--markets-ticker-hover); text-decoration: underline; }
@@ -262,7 +259,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .muted { color: var(--markets-muted) !important; }
 .metric-sub { color: var(--markets-muted); }
 .inline-ticker, .inline-ticker.up, .inline-ticker.down, .inline-ticker.flat { color: var(--markets-ticker); background: var(--markets-ticker-background); border-color: var(--markets-border); border-radius: 3px; }
-.move-pct.flat { color: var(--markets-neutral); background: var(--markets-hover); }
 .source-pills span, .tag-row span, .example-cloud span { color: var(--markets-primary); background: var(--markets-selected); border-color: var(--markets-border); }
 
 /* Contain retained workspace grids and use the shared reading surfaces. */
@@ -385,7 +381,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .markets-daily .latest-market-context :is(.portfolio-actions p,.portfolio-stance,.ticker-watch > p) { color: var(--markets-muted); }
 .markets-daily .latest-market-context .ticker-watch button { color: var(--markets-foreground); background: var(--markets-hover); border-color: var(--markets-border-strong); }
 .markets-daily .latest-market-context .ticker-watch button:disabled { color: var(--markets-muted); background: var(--markets-hover); border-color: var(--markets-border); }
-.markets-daily .latest-market-context .move-pct.flat { color: var(--markets-muted); background: var(--markets-surface); border-color: var(--markets-border); }
 @media(max-width:700px) { .markets-daily .latest-market-context .brief-support-grid { grid-template-columns: minmax(0,1fr); } }
 
 /* Category quick view uses source categories, never free-form workflow tags. */
@@ -435,3 +430,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   --macro-meter-halo: #fff;
   --macro-meter-pointer: #111;
 }
+/* Semantic changes prevail over broad foreground rules. The shell scope ties
+   their strongest :is() branch; this final position wins by source order.
+   Keep the unscoped contract for legacy consumers outside the Markets shell. */
+.financial-change[data-direction='positive'],
+.markets-app .financial-change[data-direction='positive'] { color: var(--markets-positive); }
+.financial-change[data-direction='negative'],
+.markets-app .financial-change[data-direction='negative'] { color: var(--markets-negative); }
+.financial-change[data-direction='neutral'],
+.markets-app .financial-change[data-direction='neutral'] { color: var(--markets-neutral); }

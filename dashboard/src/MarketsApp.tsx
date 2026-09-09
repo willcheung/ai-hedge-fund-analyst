@@ -1,3 +1,4 @@
+import {morningBriefProse, isMarketSetupHeading} from './morningBriefPresentation'
 import { briefHeadline, cleanObservedPrefixes, macroProse } from './briefPresentation'
 import {useEffect,useMemo,useState} from 'react'
 import OwnerApp, {isDashboardData, normalizeDashboardData, DailyBriefTimeline, LatestMarketContextEvidence, CioBrief, ValuationDashboard, TradingViewSymbolOverview, type DashboardData} from './App'
@@ -14,7 +15,8 @@ function CompanyChart({symbol,exchange,tradingViewSymbol}:{symbol:string;exchang
 function Dates({item}:{item:Publication}) {return <p className="markets-metadata">{item.publishedAt||item.publishedDate ? `Published ${formatTimestamp(item.publishedAt||item.publishedDate)}` : 'Publication date unavailable'} · {item.informationAt||item.informationDate ? `Information updated ${formatTimestamp(item.informationAt||item.informationDate)}` : 'Information update date unavailable'}</p>}
 export function PublicationArticle({item,symbols,lead=false}:{item:Publication;symbols:KnownSymbols;lead?:boolean}) {
  const macro = item.jobId === 'synthetic-macro' || item.title.trim().toLowerCase() === 'macro read';
- const prose = (text: string) => macro ? macroProse(text) : cleanObservedPrefixes(text);
+ const morning = item.jobId === 'synthetic-morning' || item.title.trim().toLowerCase() === 'morning market briefing';
+ const prose = (text: string) => macro ? macroProse(text) : morning ? morningBriefProse(cleanObservedPrefixes(text)) : cleanObservedPrefixes(text);
  const title = briefHeadline(item.title);
  const weekly = ['synthetic-job-08', 'synthetic-job-0c'].includes(item.jobId);
  const label = weekly ? <p className="markets-metadata">Weekly Stock Analysis</p> : null;
@@ -24,7 +26,7 @@ export function PublicationArticle({item,symbols,lead=false}:{item:Publication;s
  {label}<Dates item={item}/>{title && <h1><ResearchHeadline content={title} knownSymbols={symbols}/></h1>}{item.summary!==item.title&&<Narrative content={prose(item.summary)} knownSymbols={symbols}/>}
  {item.assessment&&<Status value={item.assessment}/>}{item.quote&&<Quote quote={item.quote} trusted/>}
  {item.action&&<section className="markets-section"><h2>Current view</h2><Narrative content={item.action.currentView} knownSymbols={symbols}/><h3>Why</h3><Narrative content={item.action.why} knownSymbols={symbols}/>{item.action.prerequisites.length>0&&<><h3>What would change the view</h3><ul>{item.action.prerequisites.map(v=><li key={v}><Narrative content={v} knownSymbols={symbols}/></li>)}</ul></>}{item.action.horizon&&<p>Time horizon: {item.action.horizon}</p>}{item.action.context&&<p>{item.action.context}</p>}{item.action.mainRisk&&<><h3>Main risk</h3><Narrative content={item.action.mainRisk} knownSymbols={symbols}/></>}{sources(item.action.sourceIds)}</section>}
- {item.sections.map((section,i)=><section className="markets-section" key={i}><h2>{section.emoji&&!section.heading.startsWith(section.emoji)?`${section.emoji} `:''}{section.heading}</h2><Narrative content={prose(section.markdown)} knownSymbols={symbols}/><div className="markets-source-links">{sources(section.sourceIds)}</div></section>)}
+ {item.sections.map((section,i)=><section className="markets-section" key={i}>{!(morning && isMarketSetupHeading(section.heading)) && <h2>{section.emoji&&!section.heading.startsWith(section.emoji)?`${section.emoji} `:''}{section.heading}</h2>}<Narrative content={prose(section.markdown)} knownSymbols={symbols}/><div className="markets-source-links">{sources(section.sourceIds)}</div></section>)}
  {!!item.thesisHistory?.length&&<section className="markets-section"><h2>Research history</h2>{item.thesisHistory.map((h,i)=><ThesisUpdate key={i} previousView={h.previousView} newEvidence={h.evidence} currentView={h.currentView} date={h.informationAt} knownSymbols={symbols} sources={item.sources.filter(s=>h.sourceIds.includes(s.id)).map(s=>({label:s.title,url:s.url}))}/>)}</section>}
  {!!item.sources.length&&<section className="markets-section"><h2>Sources</h2><ul>{item.sources.map(s=><li key={s.id}><SourceLink label={s.title} url={s.url}/></li>)}</ul></section>}
  </article>

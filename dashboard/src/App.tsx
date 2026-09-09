@@ -1,3 +1,5 @@
+import {PercentChange, percentChangeText} from './financialChange'
+import {morningBriefProse} from './morningBriefPresentation'
 import { MacroRegimeMeter } from './MacroRegimeMeter'
 import { isMacroRegimeMeter, type MacroRegimeMeterData } from './macroRegimeContract'
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
@@ -9,7 +11,7 @@ import { hasPublicationContract } from './publicationValidation'
 import { useMarketData, isStagedPreviewBuild, type MarketDataMode } from './useMarketData'
 import { WorkflowOps } from './WorkflowOps'
 import { briefText, timelineCategory, timelineInstant, timelineTimestamp, timelineIdentity, cleanObservedPrefixes, macroProse, uniqueMacroHighlights } from './briefPresentation'
-import { formatTimestamp, publicationDay, Narrative, hasAuthoredListMarker } from './researchComponents'
+import { formatTimestamp, publicationDay, Narrative, ResearchHeadline, hasAuthoredListMarker } from './researchComponents'
 
 // Canvas cannot resolve CSS variables. Read the shared tokens at each update,
 // including existing charts after an appearance change; leave data/series intact.
@@ -236,7 +238,7 @@ export function operationalNodeState(node: Pick<GraphWorkflowNode, 'id' | 'kind'
   return { status: node.status || 'unknown', detail: node.reason || 'Detail unavailable' }
 }
 
-function MetricCard({ label, value, sub, icon, className }: { label: string; value: string | number; sub?: string; icon: React.ReactNode; className?: string }) {
+function MetricCard({ label, value, sub, icon, className }: { label: string; value: React.ReactNode; sub?: string; icon: React.ReactNode; className?: string }) {
   return <div className={cls('metric-card', className)}><div className="metric-icon">{icon}</div><div><div className="metric-label">{label}</div><div className="metric-value">{value}</div>{sub && <div className="metric-sub">{sub}</div>}</div></div>
 }
 
@@ -411,46 +413,12 @@ function PostureCardView({ card, idx }: { card: PostureCard; idx: number }) {
 }
 
 function cleanBullet(text: string) { return text.replace(/^•\s*/, '').trim() }
-function pctFromText(text: string) { const m = text.match(/(?<![\d%])([+-]\d+(?:\.\d+)?)\s*%/); return m ? Number(m[1]) : null }
-function directionFromText(text: string) { const pct = pctFromText(text); return pct === null ? 'flat' : pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat' }
-function escapeRegex(text: string) { return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') }
 const autoTickerSkip = new Set(['AI', 'API', 'ARR', 'BTC', 'CPI', 'CPU', 'CPO', 'DXY', 'ETF', 'ETFs', 'EV', 'FCF', 'FOMC', 'GPU', 'HBM', 'IRA', 'IRR', 'NATO', 'OFF', 'ON', 'PCE', 'PMI', 'RTH', 'SEC', 'TAM', 'USD', 'VWAP'])
-function tickerRegex(symbols?: Set<string>) {
-  const symbolAlternates = Array.from(symbols || [])
-    .filter(symbol => /^[A-Z][A-Z0-9]{1,7}$/.test(symbol) && !autoTickerSkip.has(symbol))
-    .sort((a, b) => b.length - a.length)
-    .map(escapeRegex)
-  const known = symbolAlternates.length ? `|\\b(?:${symbolAlternates.join('|')})\\b` : ''
-  return new RegExp(`(\\$[A-Z][A-Z0-9]{1,7}\\b|(?<![\\d%])[+-]\\d+(?:\\.\\d+)?\\s*%${known})`, 'g')
-}
 function TickerAware({ text, symbols }: { text: string; symbols?: Set<string> }) {
-  const parts = text.split(tickerRegex(symbols))
-  return <>{parts.map((part, i) => {
-    const key = `${i}-${part}`
-    const pct = pctFromText(part)
-    if (pct !== null) return <span key={key} className={cls('inline-move', pct > 0 && 'up', pct < 0 && 'down')}>{part}</span>
-    if (part.match(/^\$?[A-Z][A-Z0-9]{1,7}\b$/) && !autoTickerSkip.has(part.replace(/^\$/, ''))) {
-      const symbol = part.replace(/^\$/, '')
-      return <span key={key} className="inline-ticker">${symbol}</span>
-    }
-    return <Fragment key={key}>{part}</Fragment>
-  })}</>
+  return <ResearchHeadline content={text} knownSymbols={[...(symbols || [])]} />
 }
-
 function MarkdownInline({ text, symbols }: { text: string; symbols?: Set<string> }) {
-  const parts = text.split(/(\[\[[^\]]+\]\]|\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\)|https?:\/\/[^\s<>]+|(?:\/?[\w.-]+\/)+[\w./-]+|[\w.-]+\.(?:md|json|csv|yaml|yml|txt))/g).filter(part => part !== '')
-  return <>{parts.map((part, i) => {
-    const key = `${i}-${part}`
-    // Source identifiers are not prose: ticker styling must not rewrite their paths.
-    if (/^(?:\[\[|https?:\/\/|(?:\/?[\w.-]+\/)+)|^[\w.-]+\.(?:md|json|csv|yaml|yml|txt)$/.test(part)) return <Fragment key={key}>{part}</Fragment>
-    const bold = part.match(/^\*\*(.+)\*\*$/)
-    if (bold) return <strong key={key}><TickerAware text={bold[1]} symbols={symbols} /></strong>
-    const code = part.match(/^`([^`]+)`$/)
-    if (code) return <code key={key}>{code[1]}</code>
-    const link = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/)
-    if (link) return <a key={key} href={link[2]} target="_blank" rel="noreferrer"><TickerAware text={link[1]} symbols={symbols} /></a>
-    return <TickerAware key={key} text={part} symbols={symbols} />
-  })}</>
+  return <ResearchHeadline content={text} knownSymbols={[...(symbols || [])]} />
 }
 
 function hasLeadingEmoji(text: string) { return /^[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/u.test(text.trim()) }
@@ -483,12 +451,19 @@ function MarkdownOutput({ text, symbols }: { text: string; symbols?: Set<string>
     const line = rawLines[i]
     const trimmed = line.trim()
     if (!trimmed) { i += 1; continue }
-    if (trimmed.startsWith('```')) {
-      const codeLines: string[] = []
-      i += 1
-      while (i < rawLines.length && !rawLines[i].trim().startsWith('```')) { codeLines.push(rawLines[i]); i += 1 }
-      i += rawLines[i]?.trim().startsWith('```') ? 1 : 0
-      blocks.push(<pre className="md-code" key={`code-${i}`}>{codeLines.join('\n')}</pre>)
+    // Share protected code and table blocks with publication Markdown rendering.
+    const fence = /^ {0,3}(`{3,}|~{3,})/.exec(line)
+    const table = line.includes('|') && /^\s*\|?\s*:?-{3,}/.test(rawLines[i + 1] || '')
+    if (fence || table) {
+      const start = i++
+      if (fence) {
+        const close = new RegExp(`^ {0,3}${fence[1][0]}{${fence[1].length},}\\s*$`)
+        while (i < rawLines.length && !close.test(rawLines[i])) i++
+        if (i < rawLines.length) i++
+      } else {
+        while (i < rawLines.length && rawLines[i].includes('|')) i++
+      }
+      blocks.push(<Narrative key={`shared-${start}`} content={rawLines.slice(start, i).join('\n')} knownSymbols={[...(symbols || [])]} />)
       continue
     }
     const heading = trimmed.match(/^(#{1,4})\s+(.+)$/)
@@ -506,7 +481,7 @@ function MarkdownOutput({ text, symbols }: { text: string; symbols?: Set<string>
       continue
     }
     const boldHeading = trimmed.match(/^\*\*(.+?)\*\*\s*$/)
-    if (boldHeading && boldHeading[1].length < 90) {
+    if (boldHeading && boldHeading[1].length < 90 && !/^Premarket snapshot:/i.test(boldHeading[1])) {
       blocks.push(<h4 className="md-heading" key={`bold-h-${i}`}><HeadingContent text={boldHeading[1]} symbols={symbols} /></h4>)
       i += 1
       continue
@@ -790,7 +765,7 @@ function median(values: Array<number | null | undefined>) {
 }
 function intradayHitDecision(hit: IntradayHit) {
   const level = fmtPrice(hit.wiki_level)
-  const move = fmtPct(hit.pct_today)
+  const move = percentChangeText(hit.pct_today, '')
   const price = fmtPrice(hit.price)
   if (/REVIEW_CANDIDATE/i.test(hit.action || '')) return `${price}${move ? ` (${move} today)` : ''} is review-ready${level ? ` near wiki level ${level}` : ''}. ${hit.technical_quality || ''}`.trim()
   return `${price}${move ? ` (${move} today)` : ''}: ${hit.trigger === 'near_level' && level ? `near wiki level ${level}` : 'dashboard-only tripwire'}. ${hit.technical_quality || ''}`.trim()
@@ -1104,7 +1079,7 @@ function MarketNarrativeCard({ day, symbols }: { day: JournalDay; symbols?: Set<
   const bullets = (day.marketNarrative?.bullets || day.keyTakeaways || []).map(cleanBullet).filter(Boolean).slice(0, 6)
   if (!bullets.length) return null
   return <section className="market-story">
-    <div><span className="eyebrow">Macro narrative</span><h3>{day.marketNarrative?.title || 'What the tape is saying'}</h3></div>
+    <div><span className="eyebrow">Macro narrative</span><h3><TickerAware text={day.marketNarrative?.title || 'What the tape is saying'} symbols={symbols} /></h3></div>
     <ul>{bullets.map((b, i) => <li key={`${i}-${b}`}><TickerAware text={b} symbols={symbols} /></li>)}</ul>
   </section>
 }
@@ -1138,9 +1113,8 @@ export function LatestMarketContextEvidence({ data, onSelectTicker }: { data: Da
       <div>
         {!!day.interestingTickers?.length && <section className="ticker-watch brief-watch"><h3>👀 Brief-mentioned tickers / signals</h3><p>Opinion/sentiment/source leads from the market brief. Click only to drill down; treat as “watch/research,” not action.</p><div>{day.interestingTickers.map(t => {
           const hasResearch = t.hasResearch ?? researchSymbols.has(t.symbol)
-          const dir = t.direction || 'flat'
-          const label = typeof t.changePct === 'number' ? `${t.changePct > 0 ? '+' : ''}${t.changePct.toFixed(1)}%` : '•'
-          return <button className={dir} title={hasResearch ? `${t.why}\n\nOpen in Stock research` : t.why} key={t.symbol} disabled={!hasResearch} onClick={() => onSelectTicker(t.symbol)}><strong>${t.symbol}</strong><small className={cls('move-pct', dir)}>{label}</small></button>
+          const label = <PercentChange value={t.changePct} missing="•" />
+          return <button title={hasResearch ? `${t.why}\n\nOpen in Stock research` : t.why} key={t.symbol} disabled={!hasResearch} onClick={() => onSelectTicker(t.symbol)}><strong>${t.symbol}</strong><small className="move-pct">{label}</small></button>
         })}</div></section>}
         <section className="takeaways brief-takeaways"><h3>🧠 Brief evidence that matters</h3><ul>{day.keyTakeaways.map(cleanBullet).filter(Boolean).slice(0, 6).map((t, i) => <li key={`${i}-${t}`}><TickerAware text={t} symbols={symbols} /></li>)}</ul></section>
       </div>
@@ -1254,11 +1228,10 @@ function MarketUpdates({ data, onSelectTicker }: { data: DashboardData; onSelect
         {dayIdx === 0 && <AgenticTradingReports reports={data.agenticTradingReports || (data.agenticTradingReport ? [data.agenticTradingReport] : [])} symbols={knownSymbols} />}
         {!!day.interestingTickers?.length && <section className="ticker-watch"><h3>👀 Brief-mentioned tickers / signals</h3><p>These are source/tape leads from the brief, not PM decisions. Use Top Decisions for actionability.</p><div>{day.interestingTickers.map(t => {
           const hasResearch = t.hasResearch ?? researchSymbols.has(t.symbol)
-          const dir = t.direction || 'flat'
-          const label = typeof t.changePct === 'number' ? `${t.changePct > 0 ? '+' : ''}${t.changePct.toFixed(1)}%` : '•'
-          return <button className={dir} title={hasResearch ? `${t.why}\n\nOpen in Stock research` : t.why} key={t.symbol} disabled={!hasResearch} onClick={() => onSelectTicker(t.symbol)}><strong>${t.symbol}</strong><small className={cls('move-pct', dir)}>{label}</small></button>
+          const label = <PercentChange value={t.changePct} missing="•" />
+          return <button title={hasResearch ? `${t.why}\n\nOpen in Stock research` : t.why} key={t.symbol} disabled={!hasResearch} onClick={() => onSelectTicker(t.symbol)}><strong>${t.symbol}</strong><small className="move-pct">{label}</small></button>
         })}</div></section>}
-        {!!day.actionCallouts?.length && <section className="action-callouts"><h3>🎯 Action callouts from the briefing</h3><div>{day.actionCallouts.slice(0, 6).map(callout => { const dir = directionFromText(`${callout.action} ${(callout.details || []).join(' ')}`); return <article className={dir} key={`${callout.symbol}-${callout.action}`}><div><strong>${callout.symbol}</strong><span className="callout-action">{callout.action}</span></div><ul>{(callout.details || []).slice(0, 3).map(detail => <li key={detail}><TickerAware text={detail} symbols={knownSymbols} /></li>)}</ul></article> })}</div></section>}
+        {!!day.actionCallouts?.length && <section className="action-callouts"><h3>🎯 Action callouts from the briefing</h3><div>{day.actionCallouts.slice(0, 6).map(callout => { return <article key={`${callout.symbol}-${callout.action}`}><div><strong>${callout.symbol}</strong><span className="callout-action"><TickerAware text={callout.action} symbols={knownSymbols} /></span></div><ul>{(callout.details || []).slice(0, 3).map(detail => <li key={detail}><TickerAware text={detail} symbols={knownSymbols} /></li>)}</ul></article> })}</div></section>}
         {!!day.goldSilver?.length && <section className="metals-box"><h3>🥇 Gold / silver</h3><ul>{day.goldSilver.map(cleanBullet).filter(Boolean).slice(0, 5).map((t, i) => <li key={`${i}-${t}`}><TickerAware text={t} symbols={knownSymbols} /></li>)}</ul></section>}
         <section className="takeaways"><h3>🧠 What matters</h3><ul>{day.keyTakeaways.map(cleanBullet).filter(Boolean).slice(0, 9).map((t, i) => <li key={`${i}-${t}`}><TickerAware text={t} symbols={knownSymbols} /></li>)}</ul></section>
         <details className="source-details"><summary>Source breakdown</summary><div>{day.items.map(item => <section key={publicSourceReference(item.sourcePath)}><strong>{item.sourceType}: {item.title}</strong>{item.summary && <p>{item.summary}</p>}<small>{publicSourceReference(item.sourcePath)}</small></section>)}</div></details>
@@ -1286,7 +1259,7 @@ export function DailyBriefTimeline({ data }: { data: DashboardData }) {
         const category = timelineCategory(item.jobId, item.category)
         const morning = category === 'Morning Market Briefing'
         const macro = category === 'Macro Read'
-        const prose = macro ? macroProse : (text: string) => cleanObservedPrefixes(text).trim()
+        const prose = macro ? macroProse : morning ? (text: string) => morningBriefProse(cleanObservedPrefixes(text)).trim() : (text: string) => cleanObservedPrefixes(text).trim()
         const body = prose(item.articleBody || '')
         const summary = prose(item.summary)
         const highlights = (macro ? uniqueMacroHighlights(item.highlights || [], body) : item.highlights || []).map(prose).filter(Boolean)
@@ -1394,7 +1367,7 @@ function DecisionLearningPanel({ learning, knownSymbols }: { learning?: Decision
     <div className="section-header"><div><span className="eyebrow">Decision review</span><h3>Decision discipline</h3><p>{learning.policy || 'Decision records preserve what was known at the time. Material exceptions are raised for strategy review.'}</p></div><small>{learning.generatedAt ? `Updated ${fmtDate(learning.generatedAt)}` : ''}</small></div>
     <div className="ops-summary-strip"><span>{learning.receiptCount || 0} receipts</span><span>{learning.candidateExceptionCount || 0} candidates</span><span>{learning.reviewDueCount || 0} review-due</span><span>{learning.openExceptionCount || 0} open exceptions</span><span>{learning.adoptedPolicyRuleCount || 0} adopted rules</span><span>{learning.integrityGapCount || 0} integrity gaps</span></div>
     {!!candidates.length && <div className="table-scroll"><table className="strategy-table"><caption>Strategy review queue · dashboard-only candidates, not urgent alerts</caption><thead><tr><th>Candidate</th><th>Process question</th><th>Decision change</th><th>Next review</th></tr></thead><tbody>{candidates.map(row => <tr key={row.id}><td><TickerAware text={row.symbol ? `$${row.symbol} · ${publicAssessmentLabel(row.classification)}` : publicAssessmentLabel(row.classification)} symbols={knownSymbols} /></td><td>{row.question}</td><td>{[row.priorDecision, row.currentDecision].filter(Boolean).map(publicAssessmentLabel).join(' → ') || '—'}</td><td>{row.nextReviewEvent || 'Strategy review'}</td></tr>)}</tbody></table></div>}
-    {!!outcomes.length && <details className="source-details"><summary>Recent observed outcomes ({outcomes.length})</summary><div>{outcomes.map((row, index) => <section key={row.receiptId || row.sourceReceiptId || `${row.symbol || 'portfolio'}-${index}`}><strong><TickerAware text={`${row.symbol ? `$${row.symbol} · ` : ''}${publicAssessmentLabel(row.classification || row.status)}`} symbols={knownSymbols} /></strong><p>{[row.priorDecision || row.receiptDecision, row.currentDecision].filter(Boolean).map(publicAssessmentLabel).join(' → ') || row.reviewReason || row.reason || 'Decision outcome recorded.'}{typeof row.returnPct === 'number' ? ` · ${row.returnPct >= 0 ? '+' : ''}${row.returnPct.toFixed(1)}%` : ''}</p><small>{row.observedAt ? fmtDate(row.observedAt) : ''}{row.reviewReason || row.reason ? ` · ${row.reviewReason || row.reason}` : ''}</small></section>)}</div></details>}
+    {!!outcomes.length && <details className="source-details"><summary>Recent observed outcomes ({outcomes.length})</summary><div>{outcomes.map((row, index) => <section key={row.receiptId || row.sourceReceiptId || `${row.symbol || 'portfolio'}-${index}`}><strong><TickerAware text={`${row.symbol ? `$${row.symbol} · ` : ''}${publicAssessmentLabel(row.classification || row.status)}`} symbols={knownSymbols} /></strong><p>{[row.priorDecision || row.receiptDecision, row.currentDecision].filter(Boolean).map(publicAssessmentLabel).join(' → ') || row.reviewReason || row.reason || 'Decision outcome recorded.'}{typeof row.returnPct === 'number' ? <> · <PercentChange value={row.returnPct} /></> : ''}</p><small>{row.observedAt ? fmtDate(row.observedAt) : ''}{row.reviewReason || row.reason ? ` · ${row.reviewReason || row.reason}` : ''}</small></section>)}</div></details>}
     {!!receipts.length && <details className="source-details"><summary>Recent decision records ({receipts.length})</summary><div>{receipts.map(row => <section key={row.id}><strong><TickerAware text={`$${row.symbol} · ${publicAssessmentLabel(row.decision)}`} symbols={knownSymbols} /></strong><p>{row.thesis || row.proofTrigger || row.killTrigger || 'Capital decision snapshot.'}</p><small>{row.recordedAt ? fmtDate(row.recordedAt) : ''}{row.completeness === 'incomplete' ? ` · incomplete: ${(row.missingFields || []).map(publicAssessmentLabel).join(', ')}` : ''}</small></section>)}</div></details>}
   </section>
 }
@@ -1533,7 +1506,7 @@ function ProjectionDataTable({ rows, knownSymbols }: { rows: AiProjectionRow[]; 
     return () => { table.destroy() }
   }, [rows.length])
   if (!rows.length) return null
-  return <section className="strategy-card priority-stack-card"><div className="section-header"><div><h3>Base/bull implied upside by data quality</h3><p>Sortable/searchable table view. Sort favors base upside, but table rank is not a buy/add instruction.</p></div></div><div className="table-scroll datatable-shell"><table ref={tableRef} className="strategy-table ai-projection-table display compact"><thead><tr><th title="Stock ticker symbol">Ticker</th><th title="Primary AI exposure category">Category</th><th title="Business or investment archetype used for valuation comparisons">Archetype</th><th title="Data quality: completeness and reliability of the inputs used in the projection">DQ</th><th title="Latest stock price at the dashboard refresh">Price</th><th title="Market capitalization: share price multiplied by diluted shares outstanding">Market cap</th><th title="Next-twelve-month consensus revenue estimate">NTM revenue</th><th title="Expected next-twelve-month revenue growth rate">Growth</th><th title="Relative valuation assessment and peer benchmark group">Valuation</th><th title="Base-case implied share price and upside or downside versus the current price">Base upside</th><th title="Bull-case implied share price and upside versus the current price">Bull upside</th><th title="Current research view or next step">Action</th></tr></thead><tbody>{rows.map(row => <tr className={projectionTone(row)} key={row.symbol}><td><ResearchTickerLink symbol={row.symbol} /></td><td><CategoryPill category={aiCategoryForRow(row)} /></td><td>{row.archetype}</td><td><span className={cls('projection-dq', row.dataQualityLabel)}>{displayDataQuality(row.dataQualityLabel)}</span></td><td data-order={row.price ?? undefined}>{fmtPrice(row.price)}</td><td data-order={row.marketCap ?? undefined}>{fmtBig(row.marketCap)}</td><td data-order={row.ntmRevenue ?? undefined}>{fmtBig(row.ntmRevenue)}</td><td data-order={row.ntmRevenueGrowthPct ?? undefined}>{fmtPct(row.ntmRevenueGrowthPct) || '—'}</td><td>{publicAssessmentLabel(row.valuationSignal)}{row.benchmarkGroup ? ` · Benchmark: ${row.benchmarkGroup}` : ''}</td><td data-order={row.base?.upsidePct ?? undefined}><strong>{fmtPrice(row.base?.impliedPrice) || '—'}</strong><small>{fmtPct(row.base?.upsidePct)}</small></td><td data-order={row.bull?.upsidePct ?? undefined}><strong>{fmtPrice(row.bull?.impliedPrice) || '—'}</strong><small>{fmtPct(row.bull?.upsidePct)}</small></td><td><TickerAware text={row.warRoomAction || 'context only'} symbols={knownSymbols} /></td></tr>)}</tbody></table></div></section>
+  return <section className="strategy-card priority-stack-card"><div className="section-header"><div><h3>Base/bull implied upside by data quality</h3><p>Sortable/searchable table view. Sort favors base upside, but table rank is not a buy/add instruction.</p></div></div><div className="table-scroll datatable-shell"><table ref={tableRef} className="strategy-table ai-projection-table display compact"><thead><tr><th title="Stock ticker symbol">Ticker</th><th title="Primary AI exposure category">Category</th><th title="Business or investment archetype used for valuation comparisons">Archetype</th><th title="Data quality: completeness and reliability of the inputs used in the projection">DQ</th><th title="Latest stock price at the dashboard refresh">Price</th><th title="Market capitalization: share price multiplied by diluted shares outstanding">Market cap</th><th title="Next-twelve-month consensus revenue estimate">NTM revenue</th><th title="Expected next-twelve-month revenue growth rate">Growth</th><th title="Relative valuation assessment and peer benchmark group">Valuation</th><th title="Base-case implied share price and upside or downside versus the current price">Base upside</th><th title="Bull-case implied share price and upside versus the current price">Bull upside</th><th title="Current research view or next step">Action</th></tr></thead><tbody>{rows.map(row => <tr className={projectionTone(row)} key={row.symbol}><td><ResearchTickerLink symbol={row.symbol} /></td><td><CategoryPill category={aiCategoryForRow(row)} /></td><td>{row.archetype}</td><td><span className={cls('projection-dq', row.dataQualityLabel)}>{displayDataQuality(row.dataQualityLabel)}</span></td><td data-order={row.price ?? undefined}>{fmtPrice(row.price)}</td><td data-order={row.marketCap ?? undefined}>{fmtBig(row.marketCap)}</td><td data-order={row.ntmRevenue ?? undefined}>{fmtBig(row.ntmRevenue)}</td><td data-order={row.ntmRevenueGrowthPct ?? undefined}><PercentChange value={row.ntmRevenueGrowthPct} missing="—" /></td><td>{publicAssessmentLabel(row.valuationSignal)}{row.benchmarkGroup ? ` · Benchmark: ${row.benchmarkGroup}` : ''}</td><td data-order={row.base?.upsidePct ?? undefined}><strong>{fmtPrice(row.base?.impliedPrice) || '—'}</strong><small><PercentChange value={row.base?.upsidePct} /></small></td><td data-order={row.bull?.upsidePct ?? undefined}><strong>{fmtPrice(row.bull?.impliedPrice) || '—'}</strong><small><PercentChange value={row.bull?.upsidePct} /></small></td><td><TickerAware text={row.warRoomAction || 'context only'} symbols={knownSymbols} /></td></tr>)}</tbody></table></div></section>
 }
 
 
@@ -1572,9 +1545,9 @@ function AiWarRoomGrowthScatter({ rows }: { rows: AiWarRoomRow[] }) {
       label: ctx => `${points[ctx.dataIndex]?.symbol || 'Name'}: ${Number(ctx.parsed.x || 0).toFixed(1)}% growth / ${Number(ctx.parsed.y || 0).toFixed(2)}x EV/Rev`,
       afterLabel: ctx => {
         const point = points[ctx.dataIndex]
-        return point ? [`EV: ${fmtBig(point.enterpriseValue)}`, `FCF margin: ${fmtPct(point.fcfMarginPct) || '—'}`, `Proof: ${point.proofLevel ?? '—'}`, `Action: ${humanizeLabel(point.action || 'context only')}`, `Next gate: ${point.nextGate || 'not captured'}`] : []
+        return point ? [`EV: ${fmtBig(point.enterpriseValue)}`, `FCF margin: ${typeof point.fcfMarginPct === 'number' && Number.isFinite(point.fcfMarginPct) ? `${point.fcfMarginPct}%` : '—'}`, `Proof: ${point.proofLevel ?? '—'}`, `Action: ${humanizeLabel(point.action || 'context only')}`, `Next gate: ${point.nextGate || 'not captured'}`] : []
       },
-    } } } }} plugins={[outlierLabelPlugin]} /></div><ChartCategoryKey rows={points} />{outliers.length > 0 && <div className="chart-outlier-note"><strong>{outliers.length} extreme outlier{outliers.length === 1 ? '' : 's'} outside focus window</strong><span>{outliers.map(point => `$${point.symbol} (${fmtPct(point.x)} / ${fmtMultiple(point.y)})`).join(' · ')}</span><small>Outliers remain visible in the sortable table above.</small></div>}</> : <p className="muted">No complete growth, valuation, and enterprise-value rows yet.</p>}
+    } } } }} plugins={[outlierLabelPlugin]} /></div><ChartCategoryKey rows={points} />{outliers.length > 0 && <div className="chart-outlier-note"><strong>{outliers.length} extreme outlier{outliers.length === 1 ? '' : 's'} outside focus window</strong><span><TickerAware text={outliers.map(point => `$${point.symbol} (${percentChangeText(point.x)} / ${fmtMultiple(point.y)})`).join(' · ')} /></span><small>Outliers remain visible in the sortable table above.</small></div>}</> : <p className="muted">No complete growth, valuation, and enterprise-value rows yet.</p>}
   </article>
 }
 
@@ -1612,7 +1585,7 @@ function AiWarRoomCompleteDataTable({ rows, knownSymbols }: { rows: AiWarRoomRow
     return () => { table.destroy() }
   }, [rows.length])
   if (!rows.length) return null
-  return <section className="strategy-card priority-stack-card"><div className="section-header"><div><h3>Complete AI research data</h3><p>Search and sort the full company research table. Figures come from the published research update; missing values are shown explicitly.</p></div></div><div className="table-scroll datatable-shell"><table ref={tableRef} className="strategy-table ai-war-room-table display compact"><thead><tr><th title="Stock ticker symbol">Ticker</th><th title="Research tier reflects business and thesis fragility">Research tier</th><th title="Primary AI exposure category">Category</th><th title="Current research view or next step">Action</th><th title="Evidence scale from 0 (unproven) to 5 (repeatable financial results)">Proof</th><th title="Latest stock price at the dashboard refresh">Price</th><th className="one-month-change" title="Stock-price percentage change over the prior one month">1M</th><th title="Market capitalization: share price multiplied by diluted shares outstanding">MCap</th><th title="Enterprise value: market cap plus debt and preferred claims, minus cash">EV</th><th title="Revenue reported over the latest twelve months">LTM rev</th><th title="Consensus revenue estimate for the next twelve months">NTM rev</th><th title="Latest reported quarterly revenue growth versus the same quarter one year earlier">Rev growth YoY</th><th title="Gross margin: gross profit divided by revenue">GM</th><th title="Free-cash-flow margin: free cash flow divided by revenue; pre-revenue values can be distorted">FCF margin</th><th title="Enterprise value divided by next-twelve-month revenue">EV/Rev</th><th title="Next-twelve-month price-to-earnings multiple">P/E</th><th title="Upcoming evidence or catalyst required to confirm, upgrade, or invalidate the thesis">Next gate</th></tr></thead><tbody>{rows.map(row => <tr key={`war-${row.symbol}`}><td><ResearchTickerLink symbol={row.symbol} /><small>{row.exchange || row.primaryTicker}</small></td><td><TierPill tier={row.researchTier} reviewed={row.tierReviewed} reason={row.tierReason} /></td><td><CategoryPill category={aiCategoryForRow(row)} /></td><td><TickerAware text={publicAssessmentLabel(row.action)} symbols={knownSymbols} /></td><td data-order={row.proofLevel ?? undefined}>{row.proofLevel ?? '—'}</td><td data-order={row.price ?? undefined}>{fmtPrice(row.price)}</td><td className="one-month-change" data-order={row.oneMonthChangePct ?? undefined}>{fmtPct(row.oneMonthChangePct) || '—'}</td><td data-order={row.marketCap ?? undefined}>{fmtBig(row.marketCap)}</td><td data-order={row.enterpriseValue ?? undefined}>{fmtBig(row.enterpriseValue)}</td><td data-order={row.ltmRevenue ?? undefined}>{fmtBig(row.ltmRevenue)}</td><td data-order={row.ntmRevenueEstimate ?? undefined}>{fmtBig(row.ntmRevenueEstimate)}</td><td data-order={row.revenueGrowthPct ?? undefined}>{fmtPct(row.revenueGrowthPct) || '—'}</td><td data-order={row.grossMarginPct ?? undefined}>{fmtPct(row.grossMarginPct) || '—'}</td><td data-order={row.fcfMarginPct ?? undefined}><MarginValue value={row.fcfMarginPct} /></td><td data-order={row.evNtmRevenue ?? undefined}>{fmtMultiple(row.evNtmRevenue)}</td><td data-order={row.peNtm ?? undefined}>{fmtMultiple(row.peNtm)}</td><td><TickerAware text={row.nextCatalystCheckDate || row.addZone || 'review'} symbols={knownSymbols} /></td></tr>)}</tbody></table></div></section>
+  return <section className="strategy-card priority-stack-card"><div className="section-header"><div><h3>Complete AI research data</h3><p>Search and sort the full company research table. Figures come from the published research update; missing values are shown explicitly.</p></div></div><div className="table-scroll datatable-shell"><table ref={tableRef} className="strategy-table ai-war-room-table display compact"><thead><tr><th title="Stock ticker symbol">Ticker</th><th title="Research tier reflects business and thesis fragility">Research tier</th><th title="Primary AI exposure category">Category</th><th title="Current research view or next step">Action</th><th title="Evidence scale from 0 (unproven) to 5 (repeatable financial results)">Proof</th><th title="Latest stock price at the dashboard refresh">Price</th><th className="one-month-change" title="Stock-price percentage change over the prior one month">1M</th><th title="Market capitalization: share price multiplied by diluted shares outstanding">MCap</th><th title="Enterprise value: market cap plus debt and preferred claims, minus cash">EV</th><th title="Revenue reported over the latest twelve months">LTM rev</th><th title="Consensus revenue estimate for the next twelve months">NTM rev</th><th title="Latest reported quarterly revenue growth versus the same quarter one year earlier">Rev growth YoY</th><th title="Gross margin: gross profit divided by revenue">GM</th><th title="Free-cash-flow margin: free cash flow divided by revenue; pre-revenue values can be distorted">FCF margin</th><th title="Enterprise value divided by next-twelve-month revenue">EV/Rev</th><th title="Next-twelve-month price-to-earnings multiple">P/E</th><th title="Upcoming evidence or catalyst required to confirm, upgrade, or invalidate the thesis">Next gate</th></tr></thead><tbody>{rows.map(row => <tr key={`war-${row.symbol}`}><td><ResearchTickerLink symbol={row.symbol} /><small>{row.exchange || row.primaryTicker}</small></td><td><TierPill tier={row.researchTier} reviewed={row.tierReviewed} reason={row.tierReason} /></td><td><CategoryPill category={aiCategoryForRow(row)} /></td><td><TickerAware text={publicAssessmentLabel(row.action)} symbols={knownSymbols} /></td><td data-order={row.proofLevel ?? undefined}>{row.proofLevel ?? '—'}</td><td data-order={row.price ?? undefined}>{fmtPrice(row.price)}</td><td className="one-month-change" data-order={row.oneMonthChangePct ?? undefined}><PercentChange value={row.oneMonthChangePct} missing="—" /></td><td data-order={row.marketCap ?? undefined}>{fmtBig(row.marketCap)}</td><td data-order={row.enterpriseValue ?? undefined}>{fmtBig(row.enterpriseValue)}</td><td data-order={row.ltmRevenue ?? undefined}>{fmtBig(row.ltmRevenue)}</td><td data-order={row.ntmRevenueEstimate ?? undefined}>{fmtBig(row.ntmRevenueEstimate)}</td><td data-order={row.revenueGrowthPct ?? undefined}><PercentChange value={row.revenueGrowthPct} missing="—" /></td><td data-order={row.grossMarginPct ?? undefined}>{fmtPct(row.grossMarginPct) || '—'}</td><td data-order={row.fcfMarginPct ?? undefined}><MarginValue value={row.fcfMarginPct} /></td><td data-order={row.evNtmRevenue ?? undefined}>{fmtMultiple(row.evNtmRevenue)}</td><td data-order={row.peNtm ?? undefined}>{fmtMultiple(row.peNtm)}</td><td><TickerAware text={row.nextCatalystCheckDate || row.addZone || 'review'} symbols={knownSymbols} /></td></tr>)}</tbody></table></div></section>
 }
 
 function CloudedJudgementGrowthProfitabilityScatter({ rows }: { rows: AiWarRoomRow[] }) {
@@ -1686,7 +1659,7 @@ function CloudedJudgementCompsTable({ rows, knownSymbols }: { rows: AiWarRoomRow
     return () => { table.destroy() }
   }, [rows.length])
   if (!rows.length) return null
-  return <section className="strategy-card priority-stack-card"><div className="section-header"><div><h3>AI company comparisons</h3><p>Compare reported revenue growth, profitability, valuation, price performance, and the evidence needed for the next research decision.</p></div></div><div className="table-scroll datatable-shell"><table ref={tableRef} className="strategy-table ai-war-room-table display compact"><thead><tr><th title="Stock ticker symbol">Ticker</th><th title="Primary AI exposure category">Category</th><th title="Latest reported quarterly revenue growth versus the same quarter one year earlier">Rev growth YoY</th><th title="Gross margin: gross profit divided by revenue">GM</th><th title="Free-cash-flow margin: free cash flow divided by revenue; pre-revenue values can be distorted">FCF margin</th><th title="Revenue growth plus free-cash-flow margin; 40 or higher is the classic benchmark">Rule 40</th><th title="Enterprise value divided by next-twelve-month consensus revenue">EV/NTM rev</th><th title="Market capitalization: share price multiplied by diluted shares outstanding">MCap</th><th className="one-month-change" title="Stock-price percentage change over the prior one month">1M</th><th title="Current capital posture plus the next evidence required before changing it">Action gate</th></tr></thead><tbody>{stableRowsBySymbol(rows).map(row => { const r40 = ruleOf40(row); return <tr key={`cj-${row.symbol}`}><td><ResearchTickerLink symbol={row.symbol} /><small>{row.companyName}</small></td><td><CategoryPill category={aiCategoryForRow(row)} /></td><td data-order={row.revenueGrowthPct ?? undefined}>{fmtPct(row.revenueGrowthPct) || '—'}</td><td data-order={row.grossMarginPct ?? undefined}>{fmtPct(row.grossMarginPct) || '—'}</td><td data-order={row.fcfMarginPct ?? undefined}><MarginValue value={row.fcfMarginPct} /></td><td data-order={r40 ?? undefined}>{fmtPct(r40) || '—'}</td><td data-order={row.evNtmRevenue ?? undefined}>{fmtMultiple(row.evNtmRevenue)}</td><td data-order={row.marketCap ?? undefined}>{fmtBig(row.marketCap)}</td><td className="one-month-change" data-order={row.oneMonthChangePct ?? undefined}>{fmtPct(row.oneMonthChangePct) || '—'}</td><td><TickerAware text={publicAssessmentLabel(row.action)} symbols={knownSymbols} /><small>{row.nextCatalystCheckDate || publicAssessmentLabel(row.sourceFreshness)}</small></td></tr> })}</tbody></table></div></section>
+  return <section className="strategy-card priority-stack-card"><div className="section-header"><div><h3>AI company comparisons</h3><p>Compare reported revenue growth, profitability, valuation, price performance, and the evidence needed for the next research decision.</p></div></div><div className="table-scroll datatable-shell"><table ref={tableRef} className="strategy-table ai-war-room-table display compact"><thead><tr><th title="Stock ticker symbol">Ticker</th><th title="Primary AI exposure category">Category</th><th title="Latest reported quarterly revenue growth versus the same quarter one year earlier">Rev growth YoY</th><th title="Gross margin: gross profit divided by revenue">GM</th><th title="Free-cash-flow margin: free cash flow divided by revenue; pre-revenue values can be distorted">FCF margin</th><th title="Revenue growth plus free-cash-flow margin; 40 or higher is the classic benchmark">Rule 40</th><th title="Enterprise value divided by next-twelve-month consensus revenue">EV/NTM rev</th><th title="Market capitalization: share price multiplied by diluted shares outstanding">MCap</th><th className="one-month-change" title="Stock-price percentage change over the prior one month">1M</th><th title="Current capital posture plus the next evidence required before changing it">Action gate</th></tr></thead><tbody>{stableRowsBySymbol(rows).map(row => { const r40 = ruleOf40(row); return <tr key={`cj-${row.symbol}`}><td><ResearchTickerLink symbol={row.symbol} /><small>{row.companyName}</small></td><td><CategoryPill category={aiCategoryForRow(row)} /></td><td data-order={row.revenueGrowthPct ?? undefined}><PercentChange value={row.revenueGrowthPct} missing="—" /></td><td data-order={row.grossMarginPct ?? undefined}>{fmtPct(row.grossMarginPct) || '—'}</td><td data-order={row.fcfMarginPct ?? undefined}><MarginValue value={row.fcfMarginPct} /></td><td data-order={r40 ?? undefined}>{r40 ?? '—'}</td><td data-order={row.evNtmRevenue ?? undefined}>{fmtMultiple(row.evNtmRevenue)}</td><td data-order={row.marketCap ?? undefined}>{fmtBig(row.marketCap)}</td><td className="one-month-change" data-order={row.oneMonthChangePct ?? undefined}><PercentChange value={row.oneMonthChangePct} missing="—" /></td><td><TickerAware text={publicAssessmentLabel(row.action)} symbols={knownSymbols} /><small>{row.nextCatalystCheckDate || publicAssessmentLabel(row.sourceFreshness)}</small></td></tr> })}</tbody></table></div></section>
 }
 
 export function publishedValuationAction(symbol: string, shortlist?: AsymmetricShortlist | null) {
@@ -1712,7 +1685,7 @@ function AiCapitalAllocationTable({ rows, projections, knownSymbols, shortlist }
   return <section className="strategy-card priority-stack-card"><div className="section-header"><div><span className="eyebrow">Combined proof + valuation table</span><h3>AI company financials and evidence</h3><p>Each company row combines the current view, evidence, price changes, operating quality, valuation, and projection scenarios. Sortable evidence — not a standalone buy list.</p><p className="markets-metadata">Action uses published CIO membership. No published action is not a buy or sell conclusion.{shortlist?.generatedAt ? ` Source updated ${fmtDate(shortlist.generatedAt)}.` : ''}</p></div></div><div className="table-scroll datatable-shell"><table ref={tableRef} className="strategy-table ai-war-room-table display compact"><thead><tr><th title="Stock ticker and company name">Company</th><th title="Primary AI exposure category">Theme</th><th title="Published CIO membership classification; not automatic trading permission">Action</th><th title="Evidence scale from 0 (unproven) to 5 (repeatable financial results)">Proof</th><th className="one-month-change" title="Stock-price percentage change over the prior one month">1M</th><th title="Latest reported quarterly revenue growth versus the same quarter one year earlier">Rev growth YoY</th><th title="Free-cash-flow margin: free cash flow divided by revenue; pre-revenue values can be distorted">FCF margin</th><th title="Enterprise value divided by next-twelve-month consensus revenue">EV/NTM rev</th><th title="Base-case implied share price and upside or downside versus the current price">Base case</th><th title="Bull-case implied share price and upside versus the current price">Bull case</th><th title="Upcoming evidence or catalyst required to confirm, upgrade, or invalidate the thesis">Next gate</th></tr></thead><tbody>{comparableRows.map(row => {
     const projection = projectionBySymbol.get(row.symbol)
     const action = publishedValuationAction(row.symbol, shortlist)
-    return <tr key={`allocation-${row.symbol}`}><td><ResearchTickerLink symbol={row.symbol} /><small>{row.companyName}</small></td><td><CategoryPill category={aiCategoryForRow(row)} /></td><td className="valuation-action"><span className={cls("valuation-action-label",action.tone)} title={action.reason}>{action.label}</span></td><td data-order={row.proofLevel ?? undefined}>{row.proofLevel ?? '—'}</td><td className="one-month-change" data-order={row.oneMonthChangePct ?? undefined}>{fmtPct(row.oneMonthChangePct) || '—'}</td><td data-order={row.revenueGrowthPct ?? undefined}>{fmtPct(row.revenueGrowthPct) || '—'}</td><td data-order={row.fcfMarginPct ?? undefined}><MarginValue value={row.fcfMarginPct} /></td><td data-order={row.evNtmRevenue ?? projection?.evNtmRevenue ?? undefined}>{fmtMultiple(row.evNtmRevenue ?? projection?.evNtmRevenue)}</td><td data-order={projection?.base?.upsidePct ?? undefined}><strong>{fmtPrice(projection?.base?.impliedPrice) || '—'}</strong><small>{fmtPct(projection?.base?.upsidePct)}</small></td><td data-order={projection?.bull?.upsidePct ?? undefined}><strong>{fmtPrice(projection?.bull?.impliedPrice) || '—'}</strong><small>{fmtPct(projection?.bull?.upsidePct)}</small></td><td><TickerAware text={row.nextCatalystCheckDate || row.addZone || projection?.base?.proofNeeded || 'Review details unavailable'} symbols={knownSymbols} /></td></tr>
+    return <tr key={`allocation-${row.symbol}`}><td><ResearchTickerLink symbol={row.symbol} /><small>{row.companyName}</small></td><td><CategoryPill category={aiCategoryForRow(row)} /></td><td className="valuation-action"><span className={cls("valuation-action-label",action.tone)} title={action.reason}>{action.label}</span></td><td data-order={row.proofLevel ?? undefined}>{row.proofLevel ?? '—'}</td><td className="one-month-change" data-order={row.oneMonthChangePct ?? undefined}><PercentChange value={row.oneMonthChangePct} missing="—" /></td><td data-order={row.revenueGrowthPct ?? undefined}><PercentChange value={row.revenueGrowthPct} missing="—" /></td><td data-order={row.fcfMarginPct ?? undefined}><MarginValue value={row.fcfMarginPct} /></td><td data-order={row.evNtmRevenue ?? projection?.evNtmRevenue ?? undefined}>{fmtMultiple(row.evNtmRevenue ?? projection?.evNtmRevenue)}</td><td data-order={projection?.base?.upsidePct ?? undefined}><strong>{fmtPrice(projection?.base?.impliedPrice) || '—'}</strong><small><PercentChange value={projection?.base?.upsidePct} /></small></td><td data-order={projection?.bull?.upsidePct ?? undefined}><strong>{fmtPrice(projection?.bull?.impliedPrice) || '—'}</strong><small><PercentChange value={projection?.bull?.upsidePct} /></small></td><td><TickerAware text={row.nextCatalystCheckDate || row.addZone || projection?.base?.proofNeeded || 'Review details unavailable'} symbols={knownSymbols} /></td></tr>
   })}</tbody></table></div></section>
 }
 
@@ -1727,8 +1700,8 @@ function CloudedJudgementCompsSection({ rows, knownSymbols, showTable = true }: 
     <section className="strategy-metrics ai-projection-metrics">
       <MetricCard label="Plotted AI rows" value={comparableRows.length} sub="Software/app layer excluded" icon={<Database size={22} />} />
       <MetricCard label="Median EV/NTM rev" value={fmtMultiple(medMultiple)} sub="Multiple sanity check" icon={<TrendingUp size={22} />} />
-      <MetricCard label="Median growth" value={fmtPct(medGrowth) || '—'} sub="Latest reported revenue YoY" icon={<Activity size={22} />} />
-      <MetricCard className={(medRule || 0) >= 40 ? 'success' : 'warning'} label="Median Rule 40" value={fmtPct(medRule) || '—'} sub="Growth + FCF margin" icon={<ShieldCheck size={22} />} />
+      <MetricCard label="Median growth" value={<PercentChange value={medGrowth} />} sub="Latest reported revenue YoY" icon={<Activity size={22} />} />
+      <MetricCard label="Median Rule 40" value={medRule ?? '—'} sub="Growth + FCF margin" icon={<ShieldCheck size={22} />} />
     </section>
     <section className="strategy-card ai-chart-gallery"><div className="section-header"><div><h3>AI stock visuals</h3><p>Colors identify AI category on each chart. Margin charts exclude pre-revenue denominator blowups beyond ±500%, while tables still show the raw value.</p></div></div><div className="ai-chart-grid">{showTable && <AiWarRoomGrowthScatter rows={comparableRows} />}<CloudedJudgementGrowthProfitabilityScatter rows={comparableRows} /><AiFcfMarginLeaderboard rows={comparableRows} /><AiRevenueLeaderboard rows={comparableRows} /><CloudedJudgementRuleOf40Chart rows={comparableRows} /></div></section>
     {showTable && <CloudedJudgementCompsTable rows={comparableRows} knownSymbols={knownSymbols} />}
@@ -1772,7 +1745,7 @@ function AiProjectionDashboard({ data, combined = false }: { data: DashboardData
 
     {!combined && <ProjectionDataTable rows={topBase} knownSymbols={knownSymbols} />}
 
-    {!combined && <section className="strategy-card"><div className="section-header"><div><span className="eyebrow">Universe detail</span><h3>All included AI names</h3><p>Shows why each ticker is in the AI projection universe and what field gaps block better valuation work.</p></div></div><div className="ai-universe-grid">{rows.map(row => <article className={cls('ai-universe-card', projectionTone(row))} key={`universe-${row.symbol}`}><div><strong><ResearchTickerLink symbol={row.symbol} /></strong><span>{row.archetype}</span></div><p>{row.inclusionReason}</p><ul><li>Base: {fmtPct(row.base?.upsidePct) || 'not supported'} / Bull: {fmtPct(row.bull?.upsidePct) || 'not supported'}</li><li>Multiple: EV/Rev {fmtMultiple(row.evNtmRevenue)}, P/E {fmtMultiple(row.peNtm)}, EV/EBITDA {fmtMultiple(row.evEbitdaNtm)}</li><li>Missing: {(row.missingCriticalFields || []).join(', ') || 'none flagged'}</li></ul><small>{row.sourcePage}</small></article>)}</div></section>}
+    {!combined && <section className="strategy-card"><div className="section-header"><div><span className="eyebrow">Universe detail</span><h3>All included AI names</h3><p>Shows why each ticker is in the AI projection universe and what field gaps block better valuation work.</p></div></div><div className="ai-universe-grid">{rows.map(row => <article className={cls('ai-universe-card', projectionTone(row))} key={`universe-${row.symbol}`}><div><strong><ResearchTickerLink symbol={row.symbol} /></strong><span>{row.archetype}</span></div><p>{row.inclusionReason}</p><ul><li>Base: <PercentChange value={row.base?.upsidePct} missing="not supported" /> / Bull: <PercentChange value={row.bull?.upsidePct} missing="not supported" /></li><li>Multiple: EV/Rev {fmtMultiple(row.evNtmRevenue)}, P/E {fmtMultiple(row.peNtm)}, EV/EBITDA {fmtMultiple(row.evEbitdaNtm)}</li><li>Missing: {(row.missingCriticalFields || []).join(', ') || 'none flagged'}</li></ul><small>{row.sourcePage}</small></article>)}</div></section>}
 
     {!combined && !!football.length && <section className="strategy-card"><div className="section-header"><div><span className="eyebrow">Readable chart data</span><h3>Projection football field rows</h3><p>Exact values behind the football-field chart for the tickers with full bear/base/bull support.</p></div></div><div className="table-scroll"><table className="strategy-table"><thead><tr><th>Ticker</th><th>Current</th><th>Bear</th><th>Base</th><th>Bull</th></tr></thead><tbody>{football.map(row => <tr key={`football-${row.symbol}`}><td>{typeof row.symbol === 'string' ? <ResearchTickerLink symbol={row.symbol} /> : 'Ticker unavailable'}</td><td>{fmtPrice(row.currentPrice as number)}</td><td>{fmtPrice(row.bear as number)}</td><td>{fmtPrice(row.base as number)}</td><td>{fmtPrice(row.bull as number)}</td></tr>)}</tbody></table></div></section>}
 
