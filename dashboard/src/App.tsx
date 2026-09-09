@@ -9,7 +9,7 @@ import { hasPublicationContract } from './publicationValidation'
 import { useMarketData, isStagedPreviewBuild, type MarketDataMode } from './useMarketData'
 import { WorkflowOps } from './WorkflowOps'
 import { briefText, timelineCategory, timelineInstant, timelineTimestamp, timelineIdentity, cleanObservedPrefixes, macroProse, uniqueMacroHighlights } from './briefPresentation'
-import { formatTimestamp, publicationDay, Narrative } from './researchComponents'
+import { formatTimestamp, publicationDay, Narrative, hasAuthoredListMarker } from './researchComponents'
 
 // Canvas cannot resolve CSS variables. Read the shared tokens at each update,
 // including existing charts after an appearance change; leave data/series intact.
@@ -533,7 +533,7 @@ function MarkdownOutput({ text, symbols }: { text: string; symbols?: Set<string>
       }
       blocks.push(<div className="md-action-list" key={`actions-${i}`}>{groups.map((group, idx) => <article className="md-action-item" key={`${idx}-${group.title}`}>
         <div className="md-action-title"><span className="md-action-number">{idx + 1}</span><strong><MarkdownInline text={group.title} symbols={symbols} /></strong></div>
-        {!!group.details.length && <ul className="md-action-details">{group.details.map((detail, detailIdx) => <li key={`${detailIdx}-${detail}`}><MarkdownInline text={detail} symbols={symbols} /></li>)}</ul>}
+        {!!group.details.length && <ul className="md-action-details">{group.details.map((detail, detailIdx) => <li className={hasAuthoredListMarker(detail) ? 'authored-list-marker' : undefined} key={`${detailIdx}-${detail}`}><MarkdownInline text={detail} symbols={symbols} /></li>)}</ul>}
       </article>)}</div>)
       continue
     }
@@ -543,7 +543,7 @@ function MarkdownOutput({ text, symbols }: { text: string; symbols?: Set<string>
         items.push(rawLines[i].replace(/^\s*[-*•]\s+/, '').trim())
         i += 1
       }
-      blocks.push(<ul className="md-list" key={`list-${i}`}>{items.map((item, idx) => <li key={`${idx}-${item}`}><MarkdownInline text={item} symbols={symbols} /></li>)}</ul>)
+      blocks.push(<ul className="md-list" key={`list-${i}`}>{items.map((item, idx) => <li className={hasAuthoredListMarker(item) ? 'authored-list-marker' : undefined} key={`${idx}-${item}`}><MarkdownInline text={item} symbols={symbols} /></li>)}</ul>)
       continue
     }
     const para: string[] = [trimmed]
@@ -1291,12 +1291,12 @@ export function DailyBriefTimeline({ data }: { data: DashboardData }) {
         const highlights = (macro ? uniqueMacroHighlights(item.highlights || [], body) : item.highlights || []).map(prose).filter(Boolean)
         const identity = timelineIdentity(item.jobName, item.category, `${summary} ${highlights.join(' ')} ${body}`, data.tickers.map(t => t.title || ''))
         return <article className="timeline-item" key={item.id} data-publication-day={publicationDay(instant)}>
-        <aside><time dateTime={instant}>{timelineTimestamp(instant)}</time></aside>
+        <aside><strong>{publicationDay(instant)}</strong><time dateTime={instant}>{timelineTimestamp(instant)}</time></aside>
         <section className="timeline-card">
           <header className="timeline-head"><span className="eyebrow timeline-category">{category}</span></header>
           {identity && <Narrative content={identity} knownSymbols={headlineSymbols}/>}
           {summary && <Narrative content={summary} knownSymbols={headlineSymbols}/>}
-          {!!highlights.length && <ul>{highlights.map((highlight, i) => <li key={`${item.id}-${i}`}><Narrative content={highlight} knownSymbols={headlineSymbols}/></li>)}</ul>}
+          {!!highlights.length && <ul>{highlights.map((highlight, i) => <li className={hasAuthoredListMarker(highlight) ? 'authored-list-marker' : undefined} key={`${item.id}-${i}`}><Narrative content={highlight} knownSymbols={headlineSymbols}/></li>)}</ul>}
           {category === 'Weekly Stock Analysis' && body && <section aria-label="Why selected this week"><MarkdownOutput text={body} symbols={knownSymbols} /></section>}
           {macro && body && <section aria-label="Combined macro commentary"><MarkdownOutput text={body} symbols={knownSymbols} /></section>}
           {body && !['Weekly Stock Analysis', 'Macro Read'].includes(category) && <details className="source-details"><summary>Read full article</summary><div><small>{publicSourceReference(item.sourcePath)}</small><MarkdownOutput text={body} symbols={knownSymbols} /></div></details>}

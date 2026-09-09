@@ -275,6 +275,10 @@ export function ResearchItem({marker,children}:{marker:string;children:ReactNode
  return <span className="research-item"><span className="research-marker" role="img" aria-label={({'📌':'Important evidence','⚠️':'Caution','🟢':'Green marker','🟡':'Yellow marker','🔴':'Red marker','⚪':'Neutral marker','🧠':'Analysis','🎯':'Focus','📡':'Monitoring','📅':'Date'} as Record<string,string>)[marker] || 'Research marker'}>{marker}</span><span>{children}</span></span>
 }
 export interface NarrativeProps { content?: string | null; knownSymbols?: KnownSymbols; }
+// Inline emphasis can wrap a source-authored marker without changing its meaning.
+export function hasAuthoredListMarker(text: string) {
+  return /^(?:\*\*|__|\*|_)*(?:[\u{1F300}-\u{1FAFF}\u2600-\u27BF]|[•●▪◦])/u.test(text.trim());
+}
 const tableCells = (line: string) => line.trim().replace(/^\|/, '').replace(/\|$/, '').split(/(?<!\\)\|/).map(cell => cell.trim().replace(/\\\|/g, '|'));
 const tableSeparator = (line: string) => line.includes('|') && tableCells(line).every(cell => /^:?-{3,}:?$/.test(cell));
 /** Deliberately limited Markdown, built as React nodes. Raw HTML is always text. */
@@ -321,7 +325,7 @@ export function Narrative({ content, knownSymbols = [] }: NarrativeProps) {
         if (!item || /^\d/.test(item[1]) !== ordered) break;
         i++; const body = [item[2]];
         while (i < lines.length && /^ {2,}\S/.test(lines[i]) && !/^\s*([-+*]|\d+[.)])\s/.test(lines[i])) body.push(lines[i++].trim());
-        items.push(<li key={items.length}>{finding(body.join('\n'))}</li>);
+        items.push(<li className={!ordered && hasAuthoredListMarker(body[0]) ? 'authored-list-marker' : undefined} key={items.length}>{finding(body.join('\n'))}</li>);
       }
       blocks.push(ordered ? <ol key={key} start={parseInt(list[1], 10)}>{items}</ol> : <ul key={key}>{items}</ul>); continue;
     }

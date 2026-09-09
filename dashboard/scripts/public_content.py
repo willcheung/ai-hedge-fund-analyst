@@ -167,6 +167,236 @@ def clean_narrative(text, *, action_allowed=False, editorial_checks=True):
         kept.append(unit.strip())
     return '\n'.join(kept).strip() if '\n' in text else ' '.join(x for x in kept if x).strip()
 
+# Standalone authored-body sanitizer; no producer identity or cron integration.
+def _morning_heading(line):
+    atx = re.fullmatch(r'\s*(#{1,6})\s+(.+?)(?:\s+#+)?\s*', line)
+    if atx:
+        return len(atx[1]), atx[2]
+    bold = re.fullmatch(r'\s*\*\*([^*]+)\*\*\s*:?\s*', line)
+    # A bold prose sentence is a paragraph, not a section boundary.
+    if bold and not re.search(r'[.!?]', bold[1]):
+        return 7, bold[1]
+    return None
+
+
+def _morning_company_identity(line):
+    """Extract only an explicit company identity, never interpret an action code.
+
+    Accept a bounded ACTION suffix on an ATX heading with ticker/name syntax,
+    or the audited level-three dollar-ticker heading with a prose ACTION suffix.
+    Private/operational headings cannot use this exception to escape scope.
+    """
+    if (_morning_private_heading(line) or OPERATIONAL.search(line) or re.search(
+            r'(?i)\b(?:verification|bookkeeping|receipt|wiki|cron|files|artifacts)\b', line)):
+        return ''
+    ticker = re.fullmatch(r'(###) (\$[A-Z]{1,5}) [—–] ACTION: [A-Za-z][A-Za-z0-9 ,;:/’\'()._-]{0,159}', line.strip())
+    if ticker:
+        return ticker[1] + ' ' + ticker[2]
+    match = re.fullmatch(
+        r'(#{1,6})\s+(?P<identity>\$?[A-Z]{1,5} [—–] [A-Z][A-Za-z &.-]{1,70}'
+        r'|[A-Z][A-Za-z &.-]{1,70} \(\$?[A-Z]{1,5}\))'
+        r' [—–] ACTION: [A-Z][A-Z /_-]{0,39}', line.strip())
+    if not match or PRIVATE.search(line) or OPERATIONAL.search(line):
+        return ''
+    identity = match[1] + ' ' + match['identity']
+    return identity if clean_narrative(identity) == identity else ''
+
+
+def _morning_private_heading(line):
+    # Heading labels establish scope even when bold markup hides an anchored
+    # global pattern. These are not exceptions to the shared privacy boundary.
+    return PRIVATE.search(line) or re.search(
+        r'(?i)\b(?:private|internal|owner|holdings|portfolio|sizing|bogey)\b', line)
+
+
+def _morning_evidence_suffix(unit):
+    """One audited redaction shape, not a general sentence salvage facility.
+
+    Only a flat Why now item with a scout-bearing first sentence can yield an
+    intact suffix beginning with an explicit dated official release. Withhold
+    private/action/operational items in full. Keep *all* remaining sentences,
+    including negative source caveats, or none. Never relabel the surviving text
+    as Why now. Other labels, dependencies and complex Markdown fail closed.
+    """
+    match = re.fullmatch(r'- (?:\*\*Why now:\*\*|Why now:) (.+)', unit)
+    if not match or any(pattern.search(unit) for pattern in
+                        (PRIVATE, OPERATIONAL, MALFORMED, ACTION_TEXT, DEPENDENT_REFERENCE)):
+        return ''
+    prose = match[1]
+    # Deliberately restrict redaction to plain prose with balanced bold spans.
+    # No links, nested lists, code, emphasis crossing sentences or quote splices.
+    if re.search(r'[\[\]`_<>\\*]', prose.replace('**', '')):
+        return ''
+    sentences = []
+    start = 0
+    for boundary in re.finditer(r'[.!?][”\"’\')]*(?:\*\*)?\s+(?=[A-Z])', prose):
+        prefix = prose[start:boundary.start() + 1]
+        if re.search(r'(?:\b[A-Za-z]\.){2,}$|\b(?:Mr|Mrs|Ms|Dr|Inc|Corp|vs)\.$', prefix):
+            continue
+        sentences.append(prose[start:boundary.end()].rstrip())
+        start = boundary.end()
+    sentences.append(prose[start:])
+    if len(sentences) < 2 or any(
+            sentence.count('**') % 2 or sentence.count('(') != sentence.count(')')
+            or sentence.count('“') != sentence.count('”') or sentence.count('"') % 2
+            for sentence in sentences):
+        return ''
+    first = sentences[0]
+    suffix = prose[len(first):].lstrip()  # An unchanged source substring.
+    reasons = [m[0].lower() for m in AMBIGUOUS.finditer(first)]
+    if not reasons or set(reasons) != {'scout'}:
+        return ''
+    # A dated evidence subject supplies its own antecedent; company scope is
+    # also required by the caller. Pronouns and personal theses cannot qualify.
+    months = ('January|February|March|April|May|June|July|August|September|'
+              'October|November|December')
+    if not re.match(rf'(?:{months})[’\']s official release (?:already )?'
+                    r'(?:describes|reports|states|confirms|discloses|documents)\b', suffix):
+        return ''
+    if not re.search(r'[.!?][”\"’\')]*(?:\*\*)?$', suffix):
+        return ''
+    if re.search(r'(?i)\b(?:I|we|you|my|our|your|this|that|these|those|it|they|their)\b', suffix):
+        return ''
+    if re.search(r'(?i)\b(?:buy|sell|hold|trim|purchase|recommend|position|allocation|sizing|watch)\b', suffix):
+        return ''
+    if clean_narrative(suffix) != suffix:
+        return ''
+    return '- ' + suffix
+
+
+def morning_brief_markdown(text, *, operational_line=None):
+    """Preserve authored headings, paragraphs and complete list items atomically.
+
+    Scope is tracked before filtering, across blank lines and list items. Nested
+    and lazy continuation lines belong to their parent item. The existing global
+    boundary must approve every word; its rewrites are never used as prose here.
+    Unsupported dependent references are withheld, not detached from conditions.
+    The sole sentence exception is the bounded official-release suffix above.
+    """
+    if not isinstance(text, str):
+        return ''
+    lines = text.strip().splitlines()
+    units = []
+    list_marker = re.compile(r'^( *)(?:[-+*]|\d+[.)])\s+')
+    i = 0
+    while i < len(lines):
+        if not lines[i].strip():
+            i += 1
+            continue
+        start = i
+        heading = _morning_heading(lines[i])
+        fence = re.match(r'^\s*(`{3,}|~{3,})', lines[i])
+        if fence:
+            marker = fence[1]
+            i += 1
+            while i < len(lines):
+                close = re.fullmatch(r'\s*' + re.escape(marker[0]) + '{' + str(len(marker)) + r',}\s*', lines[i])
+                i += 1
+                if close:
+                    break
+            units.append((start, i, None, True))
+            continue
+        i += 1
+        if not heading:
+            item = list_marker.match(lines[start].expandtabs(4))
+            while i < len(lines):
+                sibling = list_marker.match(lines[i].expandtabs(4))
+                expanded = lines[i].expandtabs(4)
+                indent = len(expanded) - len(expanded.lstrip(' '))
+                # Indented headings/fences are part of the list item, never a
+                # new public scope. clean_narrative rejects the whole item.
+                if item and lines[i].strip() and indent > len(item[1]):
+                    i += 1
+                    continue
+                if _morning_heading(lines[i]) or re.match(r'^\s*(`{3,}|~{3,})', lines[i]):
+                    break
+                if sibling and (not item or len(sibling[1]) <= len(item[1])):
+                    break
+                if not lines[i].strip():
+                    following = i + 1
+                    while following < len(lines) and not lines[following].strip():
+                        following += 1
+                    if not item or following == len(lines) or len(lines[following].expandtabs(4)) - len(lines[following].expandtabs(4).lstrip(' ')) <= len(item[1]):
+                        break
+                i += 1
+        units.append((start, i, heading, False))
+
+    def comparable(value):
+        return re.sub(r'\s+', ' ', value).strip()
+
+    kept = []
+    scopes = []  # (heading level, kind); retain nested privacy inside ops scope.
+    for start, end, heading, fenced in units:
+        if fenced:
+            continue
+        unit = '\n'.join(lines[start:end]).rstrip()
+        level = heading[0] if heading else None
+        approved = comparable(clean_narrative(unit)) == comparable(unit)
+        if re.match(r'(?i)^\s*(?:[-+*]\s*)?(?:\*\*)?(?:Bogey|Sizing)\s*:', unit):
+            approved = False
+        operational_item = operational_line and any(operational_line(line) for line in unit.splitlines())
+        if operational_item:
+            approved = False
+        identity = _morning_company_identity(unit) if heading else ''
+        operational_section = heading and re.fullmatch(
+            r'(?i)(?:Research Activity(?:\s*/\s*Wiki Updates)?|Wiki Updates)\s*:?', heading[1])
+        if heading:
+            # Only this exact bold label can end the audited research receipt.
+            # Never clear a nested private, rejected or other operational scope.
+            if unit.strip() == '**Sources checked**':
+                if any(kind not in {'public', 'company', 'research'} for _, kind in scopes):
+                    continue
+                if any(kind == 'research' for _, kind in scopes):
+                    scopes = scopes[:next(i for i, (_, kind) in enumerate(scopes) if kind == 'research')]
+            while scopes and scopes[-1][0] >= level:
+                scopes.pop()
+            private_section = _morning_private_heading(unit)
+            if private_section:
+                scopes.append((level, 'private'))
+            elif operational_section:
+                scopes.append((level, 'research'))
+            elif OPERATIONAL.search(unit) or (operational_line and operational_line(unit)):
+                scopes.append((level, 'operational'))
+            elif identity or re.fullmatch(r'### \$[A-Z]{1,5}', unit):
+                scopes.append((level, 'company'))
+            else:
+                scopes.append((level, 'public' if approved else 'rejected'))
+        if any(kind not in {'public', 'company'} for _, kind in scopes):
+            continue
+        if not approved:
+            if operational_item:
+                unit = ''
+            elif heading:
+                unit = identity
+            elif any(kind == 'company' for _, kind in scopes):
+                unit = _morning_evidence_suffix(unit)
+            else:
+                unit = ''
+        if unit:
+            kept.append((start, end, level, unit))
+
+    # A heading survives only if its subtree contains retained prose. This also
+    # removes parent headings whose only children were empty/withheld sections.
+    populated = []
+    for entry in kept:
+        start, end, level, unit = entry
+        if level is not None:
+            boundary = next((other_start for other_start, _, other_heading, _ in units
+                             if other_start > start and other_heading
+                             and other_heading[0] <= level), len(lines))
+            if not any(start < other[0] < boundary and other[2] is None for other in kept):
+                continue
+        populated.append(entry)
+    result = ''
+    previous_end = None
+    for start, end, level, unit in populated:
+        if result:
+            result += '\n' if previous_end == start else '\n\n'
+        result += unit
+        previous_end = end
+    return result
+
+
 def _allowlist(value, schema) -> Any:
     if isinstance(value,dict) and schema.get('type')=='object':
         return {key:_allowlist(value[key], spec) for key,spec in schema['properties'].items() if key in value}

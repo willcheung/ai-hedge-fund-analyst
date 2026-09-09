@@ -428,6 +428,9 @@ li { margin: 8px 0; line-height: 1.52; }
 .timeline-highlights { margin: 0; display: grid; gap: 8px; padding-left: 0; list-style: none; }
 .timeline-highlights li { margin: 0; color: #dbeafe; line-height: 1.52; padding: 9px 11px; border-radius: var(--radius-md); background: rgba(2,6,23,.22); border: 1px solid rgba(148,163,184,.10); }
 .markdown-output { display: grid; gap: 14px; color: #dbeafe; line-height: 1.58; }
+/* Keep list semantics and indentation; hide only a duplicate visual marker. */
+.daily-brief-page .timeline-card ul > li.authored-list-marker::marker,
+.daily-brief-page .timeline-card ul > li:has(> .research-narrative > :is(ul, ol):first-child)::marker { content: ''; }
 .markdown-output h3, .markdown-output h4, .markdown-output h5 { margin: 12px 0 2px; color: var(--text-strong); letter-spacing: -.018em; }
 .markdown-output h3 { font-size: 1.28rem; }
 .markdown-output h4 { font-size: 1.1rem; color: #f8fafc; padding-top: 6px; }
