@@ -1284,6 +1284,7 @@ export function DailyBriefTimeline({ data }: { data: DashboardData }) {
       {timeline.map(item => {
         const instant = timelineInstant(item.runTime)
         const category = timelineCategory(item.jobId, item.category)
+        const morning = category === 'Morning Market Briefing'
         const macro = category === 'Macro Read'
         const prose = macro ? macroProse : (text: string) => cleanObservedPrefixes(text).trim()
         const body = prose(item.articleBody || '')
@@ -1295,11 +1296,12 @@ export function DailyBriefTimeline({ data }: { data: DashboardData }) {
         <section className="timeline-card">
           <header className="timeline-head"><span className="eyebrow timeline-category">{category}</span></header>
           {identity && <Narrative content={identity} knownSymbols={headlineSymbols}/>}
-          {summary && <Narrative content={summary} knownSymbols={headlineSymbols}/>}
+          {summary && !(morning && body.startsWith(summary)) && <Narrative content={summary} knownSymbols={headlineSymbols}/>}
           {!!highlights.length && <ul>{highlights.map((highlight, i) => <li className={hasAuthoredListMarker(highlight) ? 'authored-list-marker' : undefined} key={`${item.id}-${i}`}><Narrative content={highlight} knownSymbols={headlineSymbols}/></li>)}</ul>}
           {category === 'Weekly Stock Analysis' && body && <section aria-label="Why selected this week"><MarkdownOutput text={body} symbols={knownSymbols} /></section>}
           {macro && body && <section aria-label="Combined macro commentary"><MarkdownOutput text={body} symbols={knownSymbols} /></section>}
-          {body && !['Weekly Stock Analysis', 'Macro Read'].includes(category) && <details className="source-details"><summary>Read full article</summary><div><small>{publicSourceReference(item.sourcePath)}</small><MarkdownOutput text={body} symbols={knownSymbols} /></div></details>}
+          {morning && body && <section aria-label="Morning Market Briefing full article"><MarkdownOutput text={body} symbols={knownSymbols} /></section>}
+          {body && !morning && !['Weekly Stock Analysis', 'Macro Read'].includes(category) && <details className="source-details"><summary>Read full article</summary><div><small>{publicSourceReference(item.sourcePath)}</small><MarkdownOutput text={body} symbols={knownSymbols} /></div></details>}
         </section>
       </article>})}
       {!timeline.length && <div className="empty">No material market-changing events found yet.</div>}

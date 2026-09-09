@@ -69,6 +69,7 @@
     "dashboard/src/MarketsNavigation.test.tsx",
     "dashboard/src/MembershipLayout.test.tsx",
     "dashboard/src/MeterCosmeticsMerge.test.tsx",
+    "dashboard/src/MorningMarketBriefing.test.tsx",
     "dashboard/src/OwnerWorkspace.test.tsx",
     "dashboard/src/TimelineHeader.test.tsx",
     "dashboard/src/ValuationActions.test.tsx",
