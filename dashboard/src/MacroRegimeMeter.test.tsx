@@ -29,13 +29,17 @@ describe('piecewise presentation preserves all six score bands', () => {
 })
 
 describe('producer-owned meter contract', () => {
-  it.each(cases)('$name', example => expect(isMacroRegimeMeter(example.value)).toBe(example.valid))
+  it.each(cases)('$name', example => {
+    expect(isMacroRegimeMeter(example.value)).toBe(example.valid)
+    expect(isDashboardData({ ...snapshot, macroRegimeMeter: example.value })).toBe(example.valid)
+  })
   it.each(invalid)('rejects $name', mutation => {
     const value = structuredClone(snapshot.macroRegimeMeter)
     let target: any = value
     for (const key of mutation.path.slice(0, -1)) target = target[key]
     target[mutation.path[mutation.path.length - 1]] = mutation.value
     expect(isMacroRegimeMeter(value)).toBe(false)
+    expect(isDashboardData({ ...snapshot, macroRegimeMeter: value })).toBe(false)
   })
   it('accepts the synthetic edition and rejects a malformed extension at transport validation', () => {
     expect(isMacroRegimeMeter(snapshot.macroRegimeMeter)).toBe(true)

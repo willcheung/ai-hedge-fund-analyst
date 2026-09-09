@@ -625,5 +625,297 @@
         "regimeBand": "risk_off"
       }
     ]
+  },
+  {
+    "name": "synthetic provenance: automation input",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "data/automation/synthetic-job-01.json"
+  },
+  {
+    "name": "synthetic provenance: skill instructions",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "skills/macro/SKILL.md"
+  },
+  {
+    "name": "synthetic provenance: wiki root",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "wiki/raw/synthetic-input.json"
+  },
+  {
+    "name": "synthetic provenance: wiki raw input",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "raw/synthetic-input.json"
+  },
+  {
+    "name": "synthetic provenance: wiki research",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "research/synthetic-note.md"
+  },
+  {
+    "name": "synthetic provenance: wiki daily",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "daily/synthetic-note.md"
+  },
+  {
+    "name": "synthetic provenance: wiki ticker",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "tickers/SYNTHA.md"
+  },
+  {
+    "name": "synthetic provenance: wiki query",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "queries/synthetic-query.json"
+  },
+  {
+    "name": "synthetic provenance: automation root",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "automation/synthetic-job-01.json"
+  },
+  {
+    "name": "synthetic provenance: cron output",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "cron/output/synthetic-job-01/result.json"
+  },
+  {
+    "name": "synthetic provenance: infrastructure",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "infrastructure/synthetic-service.json"
+  },
+  {
+    "name": "synthetic provenance: deployment jobs",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "deploy/jobs/synthetic-job-01.json"
+  },
+  {
+    "name": "synthetic provenance: hidden configuration",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": ".hermes/synthetic-settings.json"
+  },
+  {
+    "name": "synthetic provenance: script",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "scripts/synthetic-meter.py"
+  },
+  {
+    "name": "synthetic provenance: account info",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "data/accounts/synthetic-account.json"
+  },
+  {
+    "name": "synthetic provenance: private data",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "data/private/synthetic-input.json"
+  },
+  {
+    "name": "synthetic provenance: portfolio data",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "data/portfolio/synthetic-holdings.json"
+  },
+  {
+    "name": "synthetic provenance: synthetic namespace is not a blanket allowance",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "synthetic/inputs/automation/synthetic-job-01.json"
+  },
+  {
+    "name": "synthetic provenance: synthetic unknown file",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "synthetic/inputs/synthetic-secret.json"
+  },
+  {
+    "name": "synthetic provenance: public namespace is not reviewed",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "public/inputs/synthetic-input.json"
+  },
+  {
+    "name": "synthetic provenance: mismatched synthetic reference",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "synthetic/inputs/hyg_lqd_proxy.json"
+  },
+  {
+    "name": "synthetic provenance: mismatched public reference",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "tradermonty.hyg_lqd_proxy"
+  },
+  {
+    "name": "synthetic provenance: appended path",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "tradermonty.market_breadth/skills/macro/SKILL.md"
+  },
+  {
+    "name": "synthetic provenance: appended account info",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "tradermonty.market_breadth?account=synthetic-account"
+  },
+  {
+    "name": "synthetic provenance: encoded traversal",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "synthetic/inputs/%2e%2e/automation/synthetic-job-01.json"
+  },
+  {
+    "name": "synthetic provenance: case change",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "Synthetic/inputs/market_breadth.json"
+  },
+  {
+    "name": "synthetic provenance: trailing newline",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "synthetic/inputs/market_breadth.json\n"
+  },
+  {
+    "name": "synthetic provenance: public trailing newline",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "path"
+    ],
+    "value": "tradermonty.market_breadth\n"
+  },
+  {
+    "name": "synthetic provenance: source identity must be a string",
+    "path": [
+      "sourceHealth",
+      "sources",
+      "0",
+      "id"
+    ],
+    "value": [
+      "tradermonty.market_breadth"
+    ]
   }
 ]

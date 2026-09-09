@@ -78,6 +78,16 @@ cases, not recorded market observations. Contract source identifiers are stable
 public vocabulary; they do not refer to installed jobs. Timeline mappings cover
 only synthetic demo producers; other publishers supply their category metadata.
 
+Meter provenance uses a closed public vocabulary. Each `sourceHealth.sources`
+entry's legacy `path` field accepts its matching stable source ID (for example,
+`tradermonty.market_breadth`) or its exact checked-in synthetic reference
+(`synthetic/inputs/market_breadth.json`). The five source/reference pairs are
+reviewed together in all three snapshot schemas, Python and TypeScript. The
+synthetic namespace is not a general path allowance. Producers must supply a
+reviewed public reference; internal wiki, automation, skills, infrastructure and
+account paths fail validation. The publication boundary rejects unsafe artifacts
+without rewriting their scores or laundering internal paths into public labels.
+
 `npm run build` remains the synthetic offline build. `npm run build:live` builds
 the manifest consumer into `dist/live`, requires explicit
 `VITE_MARKETS_MANIFEST_URL` and `VITE_MARKETS_BLOB_ORIGIN`, and copies only the

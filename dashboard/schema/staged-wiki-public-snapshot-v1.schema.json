@@ -6491,12 +6491,79 @@
                   },
                   "path": {
                     "type": "string",
-                    "pattern": "^(?![\\s\\S]*[\\x00-\\x20\\x7f])(?!.*[Pp][Rr][Ii][Vv][Aa][Tt][Ee])(?!.*[Aa][Cc][Cc][Oo][Uu][Nn][Tt])(?!.*[Pp][Oo][Rr][Tt][Ff][Oo][Ll][Ii][Oo])(?!.*[Pp][Nn][Ll])(?!.*[Rr][Oo][Bb][Ii][Nn][Hh][Oo][Oo][Dd])(?!.*[Cc][Oo][Ss][Tt][_-]?[Bb][Aa][Ss][Ii][Ss])(?!.*[Dd][Rr][Yy][_-]?[Pp][Oo][Ww][Dd][Ee][Rr])(?!.*[Gg][Oo][Aa][Ll][_-]?[Gg][Aa][Pp])(?!.*\\.\\.)[A-Za-z0-9_-]+(?:[.][A-Za-z0-9_-]+)*(?:/[A-Za-z0-9_-]+(?:[.][A-Za-z0-9_-]+)*)*$"
+                    "description": "Reviewed public source reference or exact synthetic fixture reference; never an internal filesystem path."
                   }
                 },
                 "required": [
                   "id",
                   "path"
+                ],
+                "oneOf": [
+                  {
+                    "properties": {
+                      "id": {
+                        "const": "tradermonty.market_breadth"
+                      },
+                      "path": {
+                        "enum": [
+                          "tradermonty.market_breadth",
+                          "synthetic/inputs/market_breadth.json"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "id": {
+                        "const": "tradermonty.rsp_spy_proxy"
+                      },
+                      "path": {
+                        "enum": [
+                          "tradermonty.rsp_spy_proxy",
+                          "synthetic/inputs/rsp_spy_proxy.json"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "id": {
+                        "const": "tradermonty.iwm_spy_proxy"
+                      },
+                      "path": {
+                        "enum": [
+                          "tradermonty.iwm_spy_proxy",
+                          "synthetic/inputs/iwm_spy_proxy.json"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "id": {
+                        "const": "tradermonty.hyg_lqd_proxy"
+                      },
+                      "path": {
+                        "enum": [
+                          "tradermonty.hyg_lqd_proxy",
+                          "synthetic/inputs/hyg_lqd_proxy.json"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "id": {
+                        "const": "tradermonty.shy_tlt_proxy"
+                      },
+                      "path": {
+                        "enum": [
+                          "tradermonty.shy_tlt_proxy",
+                          "synthetic/inputs/shy_tlt_proxy.json"
+                        ]
+                      }
+                    }
+                  }
                 ]
               },
               "maxItems": 10

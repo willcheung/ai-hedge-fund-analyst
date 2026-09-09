@@ -98,7 +98,15 @@ METER_DRIVERS = {
     "SHY/TLT percentile proxy, inverted because a rising ratio implies duration pressure",
 }
 METER_HEALTH_REASONS = {None, "missing", "Canonical artifact was not supplied", "Canonical artifact is missing or unreadable", "Canonical artifact is not an object", "Canonical artifact failed its closed contract", "Canonical artifact failed its semantic privacy and vocabulary contract"}
-METER_PATH_PATTERN = '^(?![\\s\\S]*[\\x00-\\x20\\x7f])(?!.*[Pp][Rr][Ii][Vv][Aa][Tt][Ee])(?!.*[Aa][Cc][Cc][Oo][Uu][Nn][Tt])(?!.*[Pp][Oo][Rr][Tt][Ff][Oo][Ll][Ii][Oo])(?!.*[Pp][Nn][Ll])(?!.*[Rr][Oo][Bb][Ii][Nn][Hh][Oo][Oo][Dd])(?!.*[Cc][Oo][Ss][Tt][_-]?[Bb][Aa][Ss][Ii][Ss])(?!.*[Dd][Rr][Yy][_-]?[Pp][Oo][Ww][Dd][Ee][Rr])(?!.*[Gg][Oo][Aa][Ll][_-]?[Gg][Aa][Pp])(?!.*\\.\\.)[A-Za-z0-9_-]+(?:[.][A-Za-z0-9_-]+)*(?:/[A-Za-z0-9_-]+(?:[.][A-Za-z0-9_-]+)*)*$'
+# Reviewed public references, bound to their stable source identity. The legacy
+# field name "path" does not authorize filesystem paths or arbitrary URLs.
+METER_PUBLIC_REFERENCES = {
+    'tradermonty.market_breadth': ('tradermonty.market_breadth', 'synthetic/inputs/market_breadth.json'),
+    'tradermonty.rsp_spy_proxy': ('tradermonty.rsp_spy_proxy', 'synthetic/inputs/rsp_spy_proxy.json'),
+    'tradermonty.iwm_spy_proxy': ('tradermonty.iwm_spy_proxy', 'synthetic/inputs/iwm_spy_proxy.json'),
+    'tradermonty.hyg_lqd_proxy': ('tradermonty.hyg_lqd_proxy', 'synthetic/inputs/hyg_lqd_proxy.json'),
+    'tradermonty.shy_tlt_proxy': ('tradermonty.shy_tlt_proxy', 'synthetic/inputs/shy_tlt_proxy.json'),
+}
 METER_INPUTS = {
     "trend_breadth": (["Breadth health plus RSP/SPY and IWM/SPY participation percentiles"], ["tradermonty.market_breadth", "tradermonty.rsp_spy_proxy", "tradermonty.iwm_spy_proxy"]),
     "credit": (["HYG/LQD percentile proxy"], ["tradermonty.hyg_lqd_proxy"]),
@@ -242,6 +250,19 @@ def validate_public_snapshot_schema(body: dict[str, Any]) -> None:
     validate_macro_regime_meter_semantics(body.get("macroRegimeMeter"))
 
 
+def validate_macro_regime_meter_contract(value: Any) -> None:
+    """Validate the whole closed meter at standalone suitability/egress checks."""
+    from decimal import Decimal
+    from jsonschema import Draft202012Validator, FormatChecker
+
+    schema_path = Path(__file__).resolve().parents[1] / "schema" / "public-snapshot-v1.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"), parse_float=Decimal)["properties"]["macroRegimeMeter"]
+    candidate = json.loads(json.dumps(value), parse_float=Decimal)
+    if not Draft202012Validator(schema, format_checker=FormatChecker()).is_valid(candidate):
+        raise PrivacyError("macroRegimeMeter failed its closed contract")
+    validate_macro_regime_meter_semantics(value)
+
+
 def _key_token(key: str) -> str:
     return "".join(c for c in key.casefold() if c.isalnum())
 
@@ -329,10 +350,10 @@ def validate_macro_regime_meter_semantics(value: Any) -> None:
             or source_health.get("totalWeight") != 100 or source_health.get("unavailablePillars") != unavailable_ids):
         raise PrivacyError("macroRegimeMeter source-health totals are contradictory")
     sources = source_health.get("sources")
-    if not isinstance(sources, list) or any(not isinstance(source, dict) or source.get("id") not in METER_SOURCE_IDS
+    if not isinstance(sources, list) or any(not isinstance(source, dict) or not isinstance(source.get("id"), str) or source.get("id") not in METER_SOURCE_IDS
                                             or not isinstance(source.get("path"), str) for source in sources):
         raise PrivacyError("macroRegimeMeter source vocabulary is invalid")
-    if source_health.get("reason") not in METER_HEALTH_REASONS or any(not re.fullmatch(METER_PATH_PATTERN, source["path"]) for source in sources):
+    if source_health.get("reason") not in METER_HEALTH_REASONS or any(source["path"] not in METER_PUBLIC_REFERENCES[source["id"]] for source in sources):
         raise PrivacyError("macroRegimeMeter provenance is unsafe")
     resolved = [source["id"] for source in sources]
     if len(resolved) != len(set(resolved)):

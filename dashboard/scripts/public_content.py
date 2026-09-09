@@ -479,6 +479,14 @@ def assert_public_suitability(snapshot):
 
     Transport must reject unsafe historical payloads, not trust a producer badge.
     """
+    if 'macroRegimeMeter' in snapshot:
+        # Numeric DTOs must not pass through prose rewriting. Accept only the
+        # closed vocabulary and reviewed provenance, never a whole-section badge.
+        from public_snapshot import validate_macro_regime_meter_contract
+        try:
+            validate_macro_regime_meter_contract(snapshot['macroRegimeMeter'])
+        except (ValueError, TypeError):
+            raise PublicationError('meter-public-suitability-failed') from None
     legacy={k:v for k,v in snapshot.items() if k not in {'schemaVersion','dataAsOf','refreshMode','focusTickers','sourceHealth','privacy','publications','macroRegimeMeter'}}
     if has_private_classification(legacy) or sanitize_legacy(legacy) != legacy:
         raise PublicationError('legacy-public-suitability-failed')

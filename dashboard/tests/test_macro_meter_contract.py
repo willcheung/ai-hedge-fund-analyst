@@ -1,14 +1,30 @@
-"""Exercise the same closed observations at the Python publication boundary."""
+"""Exercise shared synthetic observations at the Python publication boundary."""
 import copy
 import json
 import sys
 import unittest
+from decimal import Decimal
 from pathlib import Path
+from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 import public_snapshot as ps
+from public_content import assert_public_suitability, PublicationError
+from publish_wiki_data import parse_snapshot, PublishError
 from stage_demo import build_demo
+
+SCHEMA_PATHS = (
+    'schema/public-snapshot-v1.schema.json',
+    'schema/staged-wiki-public-snapshot-v1.schema.json',
+    'tests/fixtures/wiki/schemas/public_market_snapshot_v1.schema.json',
+)
+
+
+def meter_validators():
+    for path in SCHEMA_PATHS:
+        schema = json.loads((ROOT / path).read_text(), parse_float=Decimal)
+        yield path, Draft202012Validator(schema['properties']['macroRegimeMeter'], format_checker=FormatChecker())
 
 
 class MacroMeterContractTests(unittest.TestCase):
@@ -20,6 +36,12 @@ class MacroMeterContractTests(unittest.TestCase):
                 candidate = {**snapshot, 'macroRegimeMeter': case['value']}
                 if case['valid']:
                     ps.validate_public_snapshot_schema(candidate)
+                    ps.validate_macro_regime_meter_semantics(case['value'])
+                    assert_public_suitability(candidate)
+                    self.assertEqual(parse_snapshot(ps.canonical_json_bytes(candidate)), candidate)
+                    for path, validator in meter_validators():
+                        with self.subTest(schema=path):
+                            validator.validate(json.loads(json.dumps(case['value']), parse_float=Decimal))
                 else:
                     with self.assertRaises((ValueError, ps.PrivacyError)):
                         ps.validate_public_snapshot_schema(candidate)
@@ -37,6 +59,29 @@ class MacroMeterContractTests(unittest.TestCase):
                 target[int(key) if isinstance(target, list) else key] = mutation['value']
                 with self.assertRaises((ValueError, ps.PrivacyError)):
                     ps.validate_public_snapshot_schema(candidate)
+                # The suitability gate must protect callers independently of
+                # whether transport/schema validation ran first.
+                with self.assertRaises(PublicationError):
+                    assert_public_suitability(candidate)
+                with self.assertRaises(PublishError):
+                    parse_snapshot(ps.canonical_json_bytes(candidate))
+                if mutation['path'][:2] == ['sourceHealth', 'sources'] and mutation['path'][-1] == 'path':
+                    with self.assertRaises(ps.PrivacyError):
+                        ps.validate_macro_regime_meter_semantics(candidate['macroRegimeMeter'])
+                    for path, validator in meter_validators():
+                        with self.subTest(schema=path):
+                            self.assertFalse(validator.is_valid(json.loads(json.dumps(candidate['macroRegimeMeter']), parse_float=Decimal)))
+
+    def test_meter_schema_copies_match(self):
+        schemas = [json.loads((ROOT / path).read_text())['properties']['macroRegimeMeter'] for path in SCHEMA_PATHS]
+        self.assertEqual(schemas[0], schemas[1])
+        self.assertEqual(schemas[0], schemas[2])
+
+    def test_suitability_does_not_exempt_unknown_meter_fields(self):
+        snapshot, _ = build_demo()
+        snapshot['macroRegimeMeter']['syntheticInternalNote'] = 'skills/macro/SKILL.md'
+        with self.assertRaises(PublicationError):
+            assert_public_suitability(snapshot)
 
     def test_synthetic_snapshot_is_accepted_without_mutation(self):
         snapshot, _ = build_demo()
