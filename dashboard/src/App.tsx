@@ -117,7 +117,6 @@ export const dashboardTabs: ReadonlyArray<{ id: Tab; label: string }> = [
   { id: 'market', label: 'Daily brief' },
   { id: 'cio', label: 'Market outlook' },
   { id: 'strategy', label: 'Valuation' },
-  { id: 'stocks', label: 'Stock research' },
   { id: 'ops', label: 'Publication availability' },
   { id: 'sources', label: 'Sources' },
 ]
@@ -125,6 +124,7 @@ export const dashboardTabs: ReadonlyArray<{ id: Tab; label: string }> = [
 export function tabFromHash(rawHash: string): Tab {
   if (tickerFromHash(rawHash)) return 'stocks'
   const hash = rawHash.replace(/^#/, '')
+  if (hash === 'stocks') return 'stocks'
   if (hash === 'projections') return 'strategy'
   return dashboardTabs.some(tab => tab.id === hash) ? hash as Tab : 'market'
 }

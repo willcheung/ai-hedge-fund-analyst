@@ -27,11 +27,13 @@ describe('restored public navigation', () => {
     for (const hash of ['#evaluation', '#strategy', '#projections', '#valuation']) expect(publicRoute(hash).page).toBe('evaluation')
     expect(publicRoute('#briefs').page).toBe('briefs')
   })
-  it('omits Themes from navigation while retaining research filters and legacy theme links', () => {
+  it('omits Research and Themes from navigation while retaining their direct routes', () => {
+    expect(siteConfig.navigation.map(n => n.label)).not.toContain('Research')
     expect(siteConfig.navigation.map(n => n.label)).not.toContain('Themes')
     const html = renderRoute('#brief')
     const nav = html.match(/<nav\b[^>]*aria-label="Main navigation"[\s\S]*?<\/nav>/)?.[0] || ''
     expect(nav).not.toBe('')
+    expect(nav).not.toContain('href="#research"')
     expect(nav).not.toContain('href="#themes"')
     expect(renderRoute('#research')).toContain('aria-label="Research categories"')
     expect(publicRoute('#themes').page).toBe('themes')
@@ -48,6 +50,10 @@ describe('restored public navigation', () => {
     expect(html).toContain('aria-label="Open navigation menu"')
     expect(html).toContain('id="markets-navigation-panel"')
     expect(html.match(/aria-label="Main navigation"/g)).toHaveLength(1)
+  })
+  it('describes ticker research as contextual in the workspace', () => {
+    const html=renderRoute('#owner')
+    expect(html).toContain('Ticker research opens contextually from ticker links.')
   })
   it('keeps the Conviction List concise and limited to the exact active source buckets', () => {
     const html=renderRoute('#cio')

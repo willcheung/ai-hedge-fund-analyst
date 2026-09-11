@@ -22,11 +22,13 @@ const valid = {
 }
 
 describe('dashboard navigation and freshness', () => {
-  it('lands on Daily Brief and keeps CIO Brief second', () => {
+  it('keeps Daily brief first/default and Market outlook second without advertising stock research', () => {
     expect(dashboardTabs.slice(0, 2).map(tab => [tab.id, tab.label])).toEqual([
       ['market', 'Daily brief'],
       ['cio', 'Market outlook'],
     ])
+    expect(dashboardTabs.map(tab => tab.id)).not.toContain('stocks')
+    expect(dashboardTabs.map(tab => tab.label)).not.toContain('Stock research')
     expect(tabFromHash('')).toBe('market')
     expect(tabFromHash('#market')).toBe('market')
     expect(tabFromHash('#cio')).toBe('cio')

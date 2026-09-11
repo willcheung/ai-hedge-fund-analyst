@@ -19,6 +19,7 @@ describe('Daily Brief without retired annotation feature', () => {
     expect(tickerFromHash('#ticker/SYNTH.N')).toBe('SYNTH.N')
     expect(tickerFromHash('#ticker/synthl')).toBe('')
     expect(tickerFromHash('#ticker/SYNTHL/invalid')).toBe('')
+    expect(tabFromHash('#stocks')).toBe('stocks')
     expect(tabFromHash('#ticker/SYNTHL')).toBe('stocks')
     for (const tab of ['market', 'cio', 'stocks', 'strategy', 'ops', 'sources']) expect(tabFromHash(`#${tab}`)).toBe(tab)
     expect(tabFromHash('#projections')).toBe('strategy')
